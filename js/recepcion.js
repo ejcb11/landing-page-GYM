@@ -300,6 +300,91 @@
   }
 
   // ==========================================
+  // CONEXIÓN A SUPABASE CLOUD (TIEMPO REAL)
+  // ==========================================
+  const SUPABASE_URL = 'https://nniczuwobtqtitkunqod.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_D-U3icJ3zPNYY66WfxTPuA_Qg-Itlsy';
+  let supabaseClient = null;
+
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch (_) {}
+
+  async function syncMemberToCloud(m) {
+    if (!supabaseClient) return;
+    try {
+      let tId = 'carlos';
+      const tLower = (m.trainer || '').toLowerCase();
+      if (tLower.includes('andrea')) tId = 'andrea';
+      else if (tLower.includes('luis')) tId = 'luis';
+
+      await supabaseClient.from('members').upsert({
+        id: m.id,
+        cedula: m.cedula,
+        name: m.name,
+        phone: m.phone,
+        plan: m.plan,
+        price: m.price || 35.0,
+        status: m.status || 'active',
+        trainer_name: m.trainer,
+        trainer_id: tId,
+        expiration: m.expiration,
+        days_left: m.daysLeft,
+        due_amount: m.dueAmount || 0.0,
+        notes: m.notes
+      }, { onConflict: 'cedula' });
+    } catch (_) {}
+  }
+
+  async function syncAttendanceToCloud(a) {
+    if (!supabaseClient) return;
+    try {
+      await supabaseClient.from('attendances').upsert({
+        id: a.id,
+        member_id: a.memberId,
+        member_name: a.memberName,
+        cedula: a.cedula,
+        plan: a.plan,
+        method: a.method,
+        status: a.status,
+        time_in: a.timeIn,
+        time_out: a.timeOut
+      });
+    } catch (_) {}
+  }
+
+  async function syncMembersFromCloud() {
+    if (!supabaseClient) return;
+    try {
+      const { data, error } = await supabaseClient.from('members').select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        members = data.map((d) => ({
+          id: d.id,
+          cedula: d.cedula,
+          name: d.name,
+          phone: d.phone || '',
+          plan: d.plan,
+          price: parseFloat(d.price) || 35.0,
+          status: d.status,
+          trainer: d.trainer_name || 'Carlos Ferreira (Fuerza)',
+          avatar: d.avatar || '',
+          daysLeft: parseInt(d.days_left) || 30,
+          expiration: d.expiration,
+          goal: 'Entrenamiento Integral',
+          notes: d.notes || '',
+          attendancesCount: 0,
+          dueAmount: parseFloat(d.due_amount) || 0.0
+        }));
+        saveMembersLocally();
+        updateKPIs();
+        renderDirectory();
+      }
+    } catch (_) {}
+  }
+
+  // ==========================================
   // CARGA Y PERSISTENCIA DE DATOS
   // ==========================================
   function loadData() {
@@ -357,12 +442,19 @@
     if (!selectedMemberId && members.length > 0) {
       selectedMemberId = members[0].id;
     }
+
+    // Sincronizar en segundo plano con Supabase si está disponible
+    syncMembersFromCloud();
   }
 
-  function saveMembers() {
+  function saveMembersLocally() {
     try {
       localStorage.setItem(STORAGE_MEMBERS, JSON.stringify(members));
     } catch (_) {}
+  }
+
+  function saveMembers() {
+    saveMembersLocally();
   }
 
   function saveAttendance() {
@@ -1099,6 +1191,7 @@
 
     attendance.unshift(newRecord);
     saveAttendance();
+    syncAttendanceToCloud(newRecord);
     renderAttendanceTable();
     updateKPIs();
     showToast(`✅ Acceso concedido: ${member.name}`);
@@ -1110,6 +1203,7 @@
       record.status = 'checked-out';
       record.timeOut = formatHour(new Date());
       saveAttendance();
+      syncAttendanceToCloud(record);
       renderAttendanceTable();
       updateKPIs();
       showToast(`🚪 Salida registrada: ${record.memberName}`);
@@ -1390,6 +1484,7 @@
       d.setDate(d.getDate() + durationDays);
       member.expiration = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
       saveMembers();
+      syncMemberToCloud(member);
 
       closeModal(modal);
       form.removeEventListener('submit', handleForm);
@@ -1495,6 +1590,7 @@
 
         members.unshift(newMember);
         saveMembers();
+        syncMemberToCloud(newMember);
 
         closeModal(modal);
         form.reset();
