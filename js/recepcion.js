@@ -1509,25 +1509,94 @@
     });
   }
 
-  function processScannedPayload(payload) {
+  async function processScannedPayload(payload) {
     const raw = String(payload || '').trim();
     let lookupId = raw;
     let lookupCedula = raw;
+    let lookupName = '';
+    let lookupStatus = 'active';
+
     if (raw.startsWith('FERREIRA_FITNESS_MEMBER:')) {
-      // Formato: FERREIRA_FITNESS_MEMBER:<id>:<cedula>:<nombre>:<estado> (el formato viejo trae el nombre en la 3ª posición)
+      // Formato: FERREIRA_FITNESS_MEMBER:<id>:<cedula>:<nombre>:<estado>
       const parts = raw.split(':');
       lookupId = (parts[1] || '').trim();
       lookupCedula = (parts[2] || '').trim();
+      lookupName = (parts[3] || '').trim();
+      lookupStatus = (parts[4] || 'ACTIVE').trim().toLowerCase();
     }
     const clean = (s) => String(s || '').replace(/[\.\-\s]/g, '').toLowerCase();
 
-    const member = members.find((m) => {
+    let member = members.find((m) => {
       if (lookupId && m.id.toLowerCase() === lookupId.toLowerCase()) return true;
       if (lookupCedula && clean(lookupCedula).length >= 5 && clean(m.cedula) === clean(lookupCedula)) return true;
+      if (lookupName && clean(m.name) === clean(lookupName)) return true;
       return false;
     });
 
-    const lookup = lookupId || lookupCedula;
+    // 1. Si no está en memoria local, buscamos en tiempo real en Supabase (la nube)
+    if (!member && supabaseClient && (lookupId || lookupCedula)) {
+      try {
+        const conds = [];
+        if (lookupId) conds.push(`id.ilike.${lookupId}`);
+        if (lookupCedula && clean(lookupCedula).length >= 5) conds.push(`cedula.ilike.%${clean(lookupCedula)}%`);
+        if (conds.length > 0) {
+          const { data } = await supabaseClient.from('members').select('*').or(conds.join(',')).limit(1);
+          if (data && data.length > 0) {
+            const d = data[0];
+            member = {
+              id: d.id,
+              cedula: d.cedula,
+              name: d.name,
+              phone: d.phone || '',
+              plan: d.plan,
+              price: parseFloat(d.price) || 35.0,
+              status: d.status,
+              trainer: d.trainer_name || 'Carlos Ferreira (Fuerza)',
+              avatar: d.avatar || '',
+              daysLeft: Number.isFinite(parseInt(d.days_left)) ? parseInt(d.days_left) : 30,
+              expiration: d.expiration,
+              goal: 'Entrenamiento Integral',
+              notes: d.notes || '',
+              attendancesCount: 0,
+              dueAmount: parseFloat(d.due_amount) || 0.0
+            };
+            members.unshift(member);
+            saveMembersLocally();
+            updateKPIs();
+            renderDirectory();
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 2. Si es un carnet digital emitido por la app móvil y aún no estaba en el gym, lo registramos de inmediato
+    if (!member && raw.startsWith('FERREIRA_FITNESS_MEMBER:')) {
+      const generatedId = lookupId || `FF-COLON-${Math.floor(10000 + Math.random() * 90000)}`;
+      member = {
+        id: generatedId,
+        cedula: lookupCedula || 'S/C',
+        name: lookupName || 'Socio VIP Digital',
+        phone: '',
+        plan: 'Plan Miembro Digital',
+        price: 35.0,
+        status: lookupStatus || 'active',
+        trainer: 'Carlos Ferreira (Fuerza)',
+        avatar: '',
+        daysLeft: 30,
+        expiration: '30 días',
+        goal: 'Entrenamiento Integral',
+        notes: 'Registrado automáticamente desde App Móvil',
+        attendancesCount: 0,
+        dueAmount: 0.0
+      };
+      members.unshift(member);
+      saveMembersLocally();
+      saveMemberToCloud(member);
+      updateKPIs();
+      renderDirectory();
+    }
+
+    const lookup = lookupId || lookupCedula || lookupName;
 
     if (member) {
       handleCheckIn(member, '📱 QR Móvil');
