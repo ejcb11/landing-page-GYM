@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ferreira Fitness GYM | Recepción & Control de Asistencia</title>
+  <meta name="description" content="Sistema de recepción, control de acceso, aforo y validación de membresías para Ferreira Fitness GYM." />
+  <meta name="theme-color" content="#000000" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/recepcion.css" />
+</head>
+<body class="reception-body">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="rec-topbar">
+    <div class="rec-topbar__inner">
+      <div class="rec-brand">
+        <img src="assets/img/logo.jpg" alt="Ferreira Fitness GYM" class="rec-brand__logo" />
+        <div class="rec-brand__titles">
+          <span class="rec-brand__name">FERREIRA FITNESS GYM</span>
+          <span class="rec-brand__badge">SISTEMA DE RECEPCIÓN & CONTROL DE ACCESO</span>
+        </div>
+      </div>
+
+      <!-- Reloj Digital en Vivo -->
+      <div class="rec-clock">
+        <span class="rec-clock__time" id="recClockTime">00:00:00</span>
+        <span class="rec-clock__date" id="recClockDate">Cargando fecha...</span>
+      </div>
+
+      <div class="rec-actions">
+        <span class="rec-status-pill">
+          <span class="rec-status-dot"></span>
+          EN LÍNEA · TURNO ACTIVO
+        </span>
+        <button type="button" class="rec-btn-ghost" id="btnToggleFullscreen" title="Pantalla completa">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+          Pantalla Completa
+        </button>
+        <a href="index.html" class="rec-btn-ghost" title="Volver a la Landing Page">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          Web
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ BARRA DE KPIS EN VIVO ============ -->
+  <section class="rec-kpis">
+    <!-- Aforo Actual -->
+    <div class="rec-kpi">
+      <div class="rec-kpi__header">
+        <span class="rec-kpi__label">Aforo en Sala</span>
+        <div class="rec-kpi__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+      </div>
+      <div class="rec-kpi__value" id="kpiAforoNum">0 / 60</div>
+      <div class="rec-kpi__sub" id="kpiAforoSub">Calculando ocupación...</div>
+      <div class="rec-capacity-bar">
+        <div class="rec-capacity-fill" id="kpiAforoFill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Asistencias del Día -->
+    <div class="rec-kpi">
+      <div class="rec-kpi__header">
+        <span class="rec-kpi__label">Ingresos Hoy</span>
+        <div class="rec-kpi__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+      </div>
+      <div class="rec-kpi__value" id="kpiTodayNum">0</div>
+      <div class="rec-kpi__sub">Asistencias registradas en este turno</div>
+    </div>
+
+    <!-- Tasa de Solvencia -->
+    <div class="rec-kpi">
+      <div class="rec-kpi__header">
+        <span class="rec-kpi__label">Socios al Día</span>
+        <div class="rec-kpi__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        </div>
+      </div>
+      <div class="rec-kpi__value" id="kpiSolvencyNum">100%</div>
+      <div class="rec-kpi__sub">Membresías activas solventes</div>
+    </div>
+
+    <!-- Pendientes de Pago -->
+    <div class="rec-kpi">
+      <div class="rec-kpi__header">
+        <span class="rec-kpi__label">Cobros Pendientes</span>
+        <div class="rec-kpi__icon" style="color: #ef4444;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+      </div>
+      <div class="rec-kpi__value" id="kpiExpiredNum" style="color: #f87171;">0</div>
+      <div class="rec-kpi__sub">Socios con cuota vencida este mes</div>
+    </div>
+  </section>
+
+  <!-- ============ ÁREA PRINCIPAL: VALIDACIÓN Y CHECK-IN ============ -->
+  <main class="rec-main">
+    
+    <!-- COLUMNA IZQUIERDA: PANELES DE ENTRADA -->
+    <div class="rec-card">
+      <div class="rec-card__head">
+        <h2 class="rec-card__title">CONTROL DE INGRESO</h2>
+        <div style="display:flex;gap:0.5rem;">
+          <button type="button" class="rec-btn-ghost" id="btnOpenNewMember" style="font-size: 0.76rem;">
+            + Nuevo Socio
+          </button>
+          <span class="rec-card__tag">MOSTRADOR</span>
+        </div>
+      </div>
+
+      <!-- Selector de Método: Búsqueda Manual vs Escáner QR -->
+      <div class="rec-tabs">
+        <button type="button" class="rec-tab is-active" id="tabModeSearch">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Búsqueda Manual (Cédula / Nombre)
+        </button>
+        <button type="button" class="rec-tab" id="tabModeScanner">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Cámara / Lector QR
+        </button>
+      </div>
+
+      <!-- PANEL 1: BÚSQUEDA MANUAL (Para cuando olvidaron el móvil) -->
+      <div id="panelSearch">
+        <div class="rec-search-box">
+          <svg class="rec-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input
+            type="text"
+            id="recSearchInput"
+            class="rec-search-input"
+            placeholder="Escribe Cédula, Nombre o Código (ej. Eduardo, 28412, FF-00842)..."
+            autocomplete="off"
+          />
+          <div class="rec-search-hint">
+            <span>Presiona <strong>Enter</strong> para seleccionar el primer resultado</span>
+            <span>Atajo: Esc para limpiar</span>
+          </div>
+        </div>
+
+        <!-- Dropdown de resultados en vivo -->
+        <div class="rec-results" id="recSearchResults"></div>
+      </div>
+
+      <!-- PANEL 2: ESCÁNER QR & CÁMARA WEBCAM -->
+      <div id="panelScanner" class="rec-scanner">
+        <div class="rec-scanner-frame">
+          <video id="recScannerVideo" class="rec-scanner-video" muted playsinline></video>
+          <div class="rec-laser-line"></div>
+          <div class="rec-scanner-target"></div>
+          <div style="position: absolute; bottom: 12px; font-size: 0.72rem; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px;">
+            Apunta el carnet digital de la app al marco
+          </div>
+        </div>
+        <div class="rec-scanner-controls">
+          <button type="button" class="btn btn--primary" id="btnSimulateScan" style="flex: 1; font-size: 0.85rem; padding: 0.65rem;">
+            📱 Simular Escaneo Móvil (Eduardo)
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Demo Chips: Pruebas rápidas para la reunión con el dueño -->
+      <div class="rec-quick-demo">
+        <div class="rec-quick-demo__title">Pruebas Rápidas de Demostración:</div>
+        <div class="rec-demo-chips">
+          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-00842" title="Probar socio VIP activo">
+            🟢 Eduardo Ferreira (VIP Activo)
+          </button>
+          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-01492" title="Probar socio mensual">
+            🟢 José Ramírez (Musculación)
+          </button>
+          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-03910" title="Probar socio con cuota vencida">
+            🔴 Carlos Mendoza (Vencido)
+          </button>
+          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-05291" title="Probar pase de día">
+            🟡 Pedro Silva (Pase de Día)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: TARJETA GIGANTE DE VALIDACIÓN (FEEDBACK EN PANTALLA) -->
+    <div class="rec-card rec-validation-card" id="recValidationCard">
+      
+      <!-- Estado de Espera (Idle) -->
+      <div class="rec-val-idle" id="recValIdle">
+        <div class="rec-val-idle__icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="12" y2="16"></line></svg>
+        </div>
+        <h3 class="rec-val-idle__title">LISTO PARA VALIDAR</h3>
+        <p class="rec-val-idle__text">
+          Acerca el carnet digital de la app al lector o escribe el nombre/cédula del alumno en el buscador para registrar el acceso.
+        </p>
+      </div>
+
+      <!-- Estado de Resultado (Se llena dinámicamente) -->
+      <div class="rec-val-result" id="recValResult"></div>
+    </div>
+
+  </main>
+
+  <!-- ============ PANEL INFERIOR: HISTORIAL DE ASISTENCIAS DEL DÍA ============ -->
+  <section class="rec-history-wrap">
+    <div class="rec-table-card">
+      <div class="rec-table-toolbar">
+        <div>
+          <h3 style="font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 1px;">
+            REGISTRO DE ASISTENCIAS DE HOY
+          </h3>
+          <p style="font-size: 0.8rem; color: var(--muted);">Entradas y salidas registradas en el turno actual.</p>
+        </div>
+
+        <div style="display:flex; align-items:center; gap: 0.85rem; flex-wrap:wrap;">
+          <!-- Filtros de Asistencia -->
+          <div class="rec-filter-pills">
+            <button type="button" class="rec-pill-btn is-active" data-filter="all">Todos</button>
+            <button type="button" class="rec-pill-btn" data-filter="inside">En Sala Ahora</button>
+            <button type="button" class="rec-pill-btn" data-filter="checked-out">Salidas</button>
+          </div>
+
+          <!-- Acciones de Datos -->
+          <button type="button" class="rec-btn-ghost" id="btnExportCsv" title="Exportar asistencias a Excel/CSV">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Exportar CSV
+          </button>
+          <button type="button" class="rec-btn-ghost" id="btnResetDemoData" title="Restablecer datos iniciales de prueba" style="color: var(--muted);">
+            🔄 Reset Demo
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla Reactiva -->
+      <div class="rec-table-container">
+        <table class="rec-table">
+          <thead>
+            <tr>
+              <th>Hora Ingreso</th>
+              <th>Socio / Cédula</th>
+              <th>Plan de Membresía</th>
+              <th>Método</th>
+              <th>Estado en Sala</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="recTableBody">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MODAL: COBRAR Y RENOVAR MEMBRESÍA ============ -->
+  <div class="modal" id="recModalRenew" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-close-modal></div>
+    <div class="modal__box" style="max-width: 440px;" role="dialog" aria-modal="true">
+      <button class="icon-btn modal__close" aria-label="Cerrar" data-close-modal>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div style="font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 0.35rem;">
+        COBRAR & RENOVAR MEMBRESÍA
+      </div>
+      <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem;">
+        Registra el pago del alumno para habilitar su acceso por 30 días adicionales.
+      </p>
+
+      <form id="renewForm">
+        <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Alumno:</div>
+          <div id="renewMemberName" style="font-size: 1.15rem; font-weight: 800; color: #fff;"></div>
+          <div id="renewMemberId" style="font-size: 0.8rem; color: var(--muted);"></div>
+          <div style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border); padding-top: 0.5rem;">
+            <span style="font-size: 0.85rem; color: var(--muted);">Monto a Cobrar:</span>
+            <span id="renewAmount" style="font-family: var(--font-display); font-size: 1.5rem; color: #ffffff;"></span>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem;">
+            Forma de Pago:
+          </label>
+          <select id="renewMethod" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;">
+            <option value="Efectivo (USD)">💵 Efectivo (Dólares USD)</option>
+            <option value="Pago Móvil (Bs)">📱 Pago Móvil (Bolívares)</option>
+            <option value="Punto de Venta / Débito">💳 Tarjeta de Débito (Punto)</option>
+            <option value="Transferencia Bancaria">🏦 Transferencia Bancaria</option>
+            <option value="Zelle / Binance">⚡ Zelle / Binance Pay</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" class="btn btn--ghost" data-close-modal>Cancelar</button>
+          <button type="submit" class="btn btn--primary">Registrar Pago & Activar Acceso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NUEVO SOCIO RÁPIDO ============ -->
+  <div class="modal" id="recModalNewMember" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-close-modal></div>
+    <div class="modal__box" style="max-width: 480px;" role="dialog" aria-modal="true">
+      <button class="icon-btn modal__close" aria-label="Cerrar" data-close-modal>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div style="font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 0.35rem;">
+        REGISTRO RÁPIDO DE SOCIO / PASE
+      </div>
+      <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem;">
+        Inscribe a un nuevo miembro o pase de visita para concederle entrada inmediata.
+      </p>
+
+      <form id="newMemberForm">
+        <div style="margin-bottom: 0.85rem;">
+          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+            Nombre y Apellido:
+          </label>
+          <input
+            type="text"
+            id="newMemberName"
+            required
+            placeholder="Ej. Roberto Sánchez"
+            style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;"
+          />
+        </div>
+
+        <div style="margin-bottom: 0.85rem;">
+          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+            Cédula de Identidad (DNI):
+          </label>
+          <input
+            type="text"
+            id="newMemberCedula"
+            required
+            placeholder="Ej. 27.819.012"
+            style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;"
+          />
+        </div>
+
+        <div style="margin-bottom: 0.85rem;">
+          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+            Plan a Asignar:
+          </label>
+          <select id="newMemberPlan" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;">
+            <option value="Plan Musculación Mensual">Plan Musculación Mensual ($35.00)</option>
+            <option value="Plan VIP Trimestral">Plan VIP Trimestral ($90.00)</option>
+            <option value="Plan Pérdida de Grasa & HIIT">Plan Pérdida de Grasa & HIIT ($40.00)</option>
+            <option value="Pase Anual Ferreira Black">Pase Anual Ferreira Black ($320.00)</option>
+            <option value="Pase de Día">Pase de Día ($3.00)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 1.35rem;">
+          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+            Entrenador de Referencia:
+          </label>
+          <select id="newMemberTrainer" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;">
+            <option value="Carlos Méndez (Fuerza)">Carlos Méndez (Fuerza & Hipertrofia)</option>
+            <option value="Andrea Rivas (Pérdida)">Andrea Rivas (Pérdida de Peso & Tonificación)</option>
+            <option value="Luis Morales (Funcional)">Luis Morales (Rendimiento & Funcional)</option>
+            <option value="Ferreira Team">Staff General Ferreira</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" class="btn btn--ghost" data-close-modal>Cancelar</button>
+          <button type="submit" class="btn btn--primary">Registrar & Marcar Ingreso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Flotante -->
+  <div class="rec-toast" id="recToast"></div>
+
+  <script src="js/recepcion.js"></script>
+</body>
+</html>
