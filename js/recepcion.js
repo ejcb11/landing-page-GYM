@@ -1344,6 +1344,29 @@
   // ==========================================
   // MODALES (COBRO Y NUEVO SOCIO)
   // ==========================================
+  function openModal(modal) {
+    if (!modal) return;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(modal) {
+    if (modal) {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    } else {
+      document.querySelectorAll('.modal').forEach((m) => {
+        m.classList.remove('is-open');
+        m.setAttribute('aria-hidden', 'true');
+      });
+    }
+    const anyStillOpen = document.querySelector('.modal.is-open, .modal[aria-hidden="false"]');
+    if (!anyStillOpen) {
+      document.body.style.overflow = '';
+    }
+  }
+
   function openRenewModal(member) {
     const modal = document.getElementById('recModalRenew');
     if (!modal) return;
@@ -1352,7 +1375,7 @@
     document.getElementById('renewMemberId').textContent = `${member.id} · C.I. ${member.cedula}`;
     document.getElementById('renewAmount').textContent = `$${(member.dueAmount || member.price || 35.0).toFixed(2)} USD`;
 
-    modal.classList.add('is-open');
+    openModal(modal);
 
     const form = document.getElementById('renewForm');
     const handleForm = (e) => {
@@ -1360,14 +1383,15 @@
       const method = document.getElementById('renewMethod').value;
 
       member.status = 'active';
-      member.daysLeft = 30;
+      const durationDays = member.plan && member.plan.includes('VIP') ? 90 : (member.plan && member.plan.includes('Anual') ? 365 : 30);
+      member.daysLeft = durationDays;
       member.dueAmount = 0.0;
       const d = new Date();
-      d.setDate(d.getDate() + 30);
+      d.setDate(d.getDate() + durationDays);
       member.expiration = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
       saveMembers();
 
-      modal.classList.remove('is-open');
+      closeModal(modal);
       form.removeEventListener('submit', handleForm);
 
       playSuccessSound();
@@ -1388,83 +1412,141 @@
   function openNewMemberModal() {
     const modal = document.getElementById('recModalNewMember');
     if (!modal) return;
-    modal.classList.add('is-open');
 
     const form = document.getElementById('newMemberForm');
-    form.onsubmit = (e) => {
-      e.preventDefault();
-      const name = document.getElementById('newMemberName').value.trim();
-      const cedula = document.getElementById('newMemberCedula').value.trim();
-      const phone = document.getElementById('newMemberPhone').value.trim() || '+58 412 0000000';
-      const plan = document.getElementById('newMemberPlan').value;
-      const trainer = document.getElementById('newMemberTrainer').value;
-      const initialStatus = document.getElementById('newMemberInitialPayment').value;
-      const notes = document.getElementById('newMemberNotes').value.trim();
-
-      // Determinar precio del plan
-      let planPrice = 35.0;
-      if (plan.includes('VIP')) planPrice = 90.0;
-      else if (plan.includes('Pérdida')) planPrice = 40.0;
-      else if (plan.includes('Anual')) planPrice = 320.0;
-      else if (plan.includes('Día')) planPrice = 3.0;
-
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const isPaid = initialStatus === 'active';
-
-      const newMember = {
-        id: `FF-COLON-${randomSuffix}`,
-        cedula: cedula,
-        name: name,
-        phone: phone,
-        plan: plan,
-        price: planPrice,
-        status: initialStatus,
-        trainer: trainer,
-        avatar: '',
-        daysLeft: isPaid ? 30 : -1,
-        expiration: isPaid
-          ? new Date(Date.now() + 30 * 86400000).toLocaleDateString('es-VE', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric'
-            })
-          : 'Pendiente de Pago',
-        goal: 'Entrenamiento Integral',
-        notes: notes || 'Inscripción en mostrador de recepción.',
-        attendancesCount: isPaid ? 1 : 0,
-        dueAmount: isPaid ? 0.0 : planPrice
-      };
-
-      members.unshift(newMember);
-      saveMembers();
-
-      modal.classList.remove('is-open');
+    if (form) {
       form.reset();
+    }
 
-      playSuccessSound();
-      showToast(`¡Socio inscrito con éxito!: ${newMember.name}`);
-      selectedMemberId = newMember.id;
-      updateKPIs();
-      renderDirectory();
+    openModal(modal);
 
-      // Si está pagado, registrar entrada directa en check-in
-      if (isPaid) {
-        handleCheckIn(newMember, 'Inscripción en Recepción');
-      }
-    };
+    setTimeout(() => {
+      const nameInput = document.getElementById('newMemberName');
+      if (nameInput) nameInput.focus();
+    }, 60);
+
+    if (form) {
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('newMemberName');
+        const cedulaInput = document.getElementById('newMemberCedula');
+        const name = (nameInput ? nameInput.value : '').trim();
+        const cedula = (cedulaInput ? cedulaInput.value : '').trim();
+        const phone = (document.getElementById('newMemberPhone')?.value || '').trim() || '+58 412 0000000';
+        const plan = document.getElementById('newMemberPlan')?.value || 'Plan Musculación Mensual';
+        const trainer = document.getElementById('newMemberTrainer')?.value || 'Carlos Méndez (Fuerza)';
+        const initialStatus = document.getElementById('newMemberInitialPayment')?.value || 'active';
+        const notes = (document.getElementById('newMemberNotes')?.value || '').trim();
+
+        if (!name || !cedula) {
+          showToast('⚠️ Por favor completa el Nombre y la Cédula del cliente.');
+          return;
+        }
+
+        // Determinar precio y días según el plan
+        let planPrice = 35.0;
+        let planDays = 30;
+        if (plan.includes('VIP')) {
+          planPrice = 90.0;
+          planDays = 90;
+        } else if (plan.includes('Pérdida')) {
+          planPrice = 40.0;
+          planDays = 30;
+        } else if (plan.includes('Anual')) {
+          planPrice = 320.0;
+          planDays = 365;
+        } else if (plan.includes('Día')) {
+          planPrice = 3.0;
+          planDays = 1;
+        }
+
+        let randomSuffix;
+        do {
+          randomSuffix = Math.floor(1000 + Math.random() * 9000);
+        } while (members.some((m) => m.id === `FF-COLON-${randomSuffix}`));
+
+        const isPaid = initialStatus === 'active';
+        const expDate = new Date();
+        expDate.setDate(expDate.getDate() + planDays);
+
+        const newMember = {
+          id: `FF-COLON-${randomSuffix}`,
+          cedula: cedula,
+          name: name,
+          phone: phone,
+          plan: plan,
+          price: planPrice,
+          status: initialStatus,
+          trainer: trainer,
+          avatar: '',
+          daysLeft: isPaid ? planDays : -1,
+          expiration: isPaid
+            ? expDate.toLocaleDateString('es-VE', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+              })
+            : 'Pendiente de Pago',
+          goal: 'Entrenamiento Integral',
+          notes: notes || 'Inscripción en mostrador de recepción.',
+          attendancesCount: isPaid ? 1 : 0,
+          dueAmount: isPaid ? 0.0 : planPrice
+        };
+
+        members.unshift(newMember);
+        saveMembers();
+
+        closeModal(modal);
+        form.reset();
+
+        playSuccessSound();
+        showToast(`🎉 ¡Socio inscrito con éxito!: ${newMember.name}`);
+        selectedMemberId = newMember.id;
+        updateKPIs();
+        renderDirectory();
+
+        // Si estamos en la vista de Check-In en vivo:
+        const sectionCheckin = document.getElementById('viewCheckinSection');
+        if (sectionCheckin && sectionCheckin.classList.contains('is-active')) {
+          handleCheckIn(newMember, isPaid ? 'Inscripción en Recepción (Solvente)' : 'Inscripción en Recepción (Deudor)');
+        } else {
+          // Si estamos en la vista de Cartera, hacer scroll al socio recién creado
+          setTimeout(() => {
+            const cardEl = document.querySelector(`.rec-member-card[data-member-id="${newMember.id}"]`);
+            if (cardEl) {
+              cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          }, 80);
+        }
+      };
+    }
   }
 
   function setupModals() {
-    const closeBtns = document.querySelectorAll('[data-close-modal]');
-    closeBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.modal').forEach((m) => m.classList.remove('is-open'));
-      });
+    // Event delegation global para cerrar modales (clic en X o backdrop con data-close-modal)
+    document.addEventListener('click', (e) => {
+      const closeTrigger = e.target.closest('[data-close-modal]');
+      if (closeTrigger) {
+        e.preventDefault();
+        const modal = closeTrigger.closest('.modal');
+        closeModal(modal);
+        return;
+      }
+
+      // Event delegation global para abrir modal de nuevo socio
+      const openTrigger = e.target.closest('.btnOpenNewMember, #btnOpenNewMember');
+      if (openTrigger) {
+        e.preventDefault();
+        openNewMemberModal();
+        return;
+      }
     });
 
-    const newMemberButtons = document.querySelectorAll('.btnOpenNewMember');
-    newMemberButtons.forEach((btn) => {
-      btn.addEventListener('click', () => openNewMemberModal());
+    // Cerrar modal al presionar Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
     });
 
     const btnSimulateScan = document.getElementById('btnSimulateScan');
