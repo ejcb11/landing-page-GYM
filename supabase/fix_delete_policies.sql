@@ -9,5 +9,5 @@ create policy "reception can delete members"
   to anon, authenticated
   using (true);
 
--- Limpieza del socio de prueba creado durante la verificación técnica.
-delete from public.members where id = 'FF-TEST-0000';
+-- Limpieza de socios temporales de prueba
+delete from public.members where id in ('FF-TEST-0000', 'FF-TEST-DEL');

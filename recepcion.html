@@ -374,28 +374,58 @@
       </button>
 
       <div style="font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 0.35rem;">
-        COBRAR & RENOVAR MEMBRESÍA
+        COBRAR, ABONAR & RENOVAR
       </div>
       <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem;">
-        Registra el pago del alumno para habilitar su acceso por 30 días adicionales.
+        Registra renovaciones completas, abonos parciales o liquidación de deuda con sincronización en tiempo real.
       </p>
 
       <form id="renewForm">
-        <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
-          <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Alumno:</div>
-          <div id="renewMemberName" style="font-size: 1.15rem; font-weight: 800; color: #fff;"></div>
-          <div id="renewMemberId" style="font-size: 0.8rem; color: var(--muted);"></div>
+        <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Alumno:</div>
+              <div id="renewMemberName" style="font-size: 1.15rem; font-weight: 800; color: #fff;"></div>
+              <div id="renewMemberId" style="font-size: 0.8rem; color: var(--muted);"></div>
+            </div>
+            <div id="renewMemberStatusBadge" style="padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase;"></div>
+          </div>
           <div style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border); padding-top: 0.5rem;">
-            <span style="font-size: 0.85rem; color: var(--muted);">Monto a Cobrar:</span>
-            <span id="renewAmount" style="font-family: var(--font-display); font-size: 1.5rem; color: #ffffff;"></span>
+            <span style="font-size: 0.82rem; color: var(--muted);" id="renewPlanSummary">Plan: —</span>
+            <span id="renewDueSummary" style="font-size: 0.85rem; font-weight: 700; color: #ef4444;">Deuda: $0.00</span>
           </div>
         </div>
 
-        <div style="margin-bottom: 1.25rem;">
-          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem;">
+        <!-- Tipo de Transacción -->
+        <div style="margin-bottom: 1rem;">
+          <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem;">
+            Tipo de Pago / Operación:
+          </label>
+          <select id="renewActionType" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;">
+            <option value="full_renew">🔄 Renovación Completa (+30 días de acceso y deuda $0)</option>
+            <option value="partial_abono">💵 Abono Parcial (Descontar de la deuda pendiente)</option>
+            <option value="settle_debt">✅ Liquidar Deuda Pendiente (Sin extender días)</option>
+          </select>
+        </div>
+
+        <!-- Monto a Cobrar -->
+        <div style="margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">
+              Monto a Cobrar ($ USD):
+            </label>
+            <span id="renewCalculatedBalance" style="font-size: 0.75rem; color: var(--accent);"></span>
+          </div>
+          <input type="number" id="renewAmountInput" step="0.50" min="0" required
+            style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff; font-family: var(--font-display); font-size: 1.5rem;" />
+        </div>
+
+        <!-- Método de Pago -->
+        <div style="margin-bottom: 1rem;">
+          <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem;">
             Forma de Pago:
           </label>
-          <select id="renewMethod" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;">
+          <select id="renewMethod" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;">
             <option value="Efectivo (USD)">💵 Efectivo (Dólares USD)</option>
             <option value="Pago Móvil (Bs)">📱 Pago Móvil (Bolívares)</option>
             <option value="Punto de Venta / Débito">💳 Tarjeta de Débito (Punto)</option>
@@ -404,11 +434,45 @@
           </select>
         </div>
 
+        <!-- Referencia o Nota Opcional -->
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem;">
+            Referencia / Comprobante (opcional):
+          </label>
+          <input type="text" id="renewRefInput" placeholder="Ej. Ref #4819 o Efectivo en caja"
+            style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 0.9rem; color: #fff; font-size: 0.85rem;" />
+        </div>
+
         <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
           <button type="button" class="btn btn--ghost" data-close-modal>Cancelar</button>
-          <button type="submit" class="btn btn--primary">Registrar Pago & Activar Acceso</button>
+          <button type="submit" class="btn btn--primary" id="btnSubmitRenew">Confirmar y Registrar Pago</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: RECIBO DE PAGO DIGITAL ============ -->
+  <div class="modal" id="recModalReceipt" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-close-modal></div>
+    <div class="modal__box rec-form-box" style="max-width: 440px;" role="dialog" aria-modal="true">
+      <button class="icon-btn modal__close" aria-label="Cerrar" data-close-modal>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; background: rgba(34, 197, 94, 0.15); color: #22c55e; margin-bottom: 0.5rem;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <div style="font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 1px;">PAGO REGISTRADO</div>
+        <p style="font-size: 0.85rem; color: var(--muted); margin: 0;">Sincronizado con Supabase Cloud y el carnet del socio.</p>
+      </div>
+
+      <div id="receiptContentBox" style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; font-family: monospace; font-size: 0.82rem; white-space: pre-wrap; line-height: 1.5; color: #fff; margin-bottom: 1.25rem;"></div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button type="button" class="btn btn--ghost" data-close-modal>Cerrar</button>
+        <button type="button" class="btn btn--primary" id="btnCopyReceipt">📋 Copiar para WhatsApp</button>
+      </div>
     </div>
   </div>
 

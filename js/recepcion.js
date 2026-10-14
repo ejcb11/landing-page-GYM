@@ -1580,43 +1580,197 @@
     const modal = document.getElementById('recModalRenew');
     if (!modal) return;
 
-    document.getElementById('renewMemberName').textContent = member.name;
-    document.getElementById('renewMemberId').textContent = `${member.id} · C.I. ${member.cedula}`;
-    document.getElementById('renewAmount').textContent = `$${(member.dueAmount || member.price || 35.0).toFixed(2)} USD`;
+    const nameEl = document.getElementById('renewMemberName');
+    const idEl = document.getElementById('renewMemberId');
+    const badgeEl = document.getElementById('renewMemberStatusBadge');
+    const planEl = document.getElementById('renewPlanSummary');
+    const dueEl = document.getElementById('renewDueSummary');
+    const actionSelect = document.getElementById('renewActionType');
+    const amountInput = document.getElementById('renewAmountInput');
+    const balancePreview = document.getElementById('renewCalculatedBalance');
+    const refInput = document.getElementById('renewRefInput');
+
+    if (nameEl) nameEl.textContent = member.name;
+    if (idEl) idEl.textContent = `${member.id} · C.I. ${member.cedula}`;
+    if (planEl) planEl.textContent = `Plan: ${member.plan || 'Musculación Mensual'}`;
+
+    const currentDue = Number(member.dueAmount) || 0;
+    const planPrice = Number(member.price) || 35.0;
+
+    if (dueEl) {
+      dueEl.textContent = `Deuda: $${currentDue.toFixed(2)}`;
+      dueEl.style.color = currentDue > 0 ? '#ef4444' : '#22c55e';
+    }
+
+    if (badgeEl) {
+      const isActive = member.status === 'active';
+      badgeEl.textContent = isActive ? 'Solvente' : 'Deudor';
+      badgeEl.style.background = isActive ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+      badgeEl.style.color = isActive ? '#22c55e' : '#ef4444';
+      badgeEl.style.border = `1px solid ${isActive ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`;
+    }
+
+    if (refInput) refInput.value = '';
+
+    function updateAmountForAction() {
+      const action = actionSelect ? actionSelect.value : 'full_renew';
+      if (action === 'full_renew') {
+        amountInput.value = planPrice.toFixed(2);
+        if (balancePreview) balancePreview.textContent = 'Quedará solvente (+30 días)';
+      } else if (action === 'settle_debt') {
+        amountInput.value = (currentDue > 0 ? currentDue : planPrice).toFixed(2);
+        if (balancePreview) balancePreview.textContent = 'Deuda quedará en $0.00';
+      } else if (action === 'partial_abono') {
+        const base = currentDue > 0 ? currentDue : planPrice;
+        amountInput.value = (base > 10 ? 15.0 : base).toFixed(2);
+        updatePartialPreview();
+      }
+    }
+
+    function updatePartialPreview() {
+      if (actionSelect && actionSelect.value === 'partial_abono') {
+        const entered = parseFloat(amountInput.value) || 0;
+        const base = currentDue > 0 ? currentDue : planPrice;
+        const remainder = Math.max(0, base - entered);
+        if (balancePreview) {
+          balancePreview.textContent = remainder === 0 ? 'Quedará solvente ($0 deuda)' : `Deuda restante: $${remainder.toFixed(2)}`;
+        }
+      }
+    }
+
+    if (actionSelect) {
+      actionSelect.value = currentDue > 0 && member.status === 'expired' ? 'settle_debt' : 'full_renew';
+      actionSelect.onchange = updateAmountForAction;
+    }
+    if (amountInput) {
+      amountInput.oninput = updatePartialPreview;
+    }
+    updateAmountForAction();
 
     openModal(modal);
 
     const form = document.getElementById('renewForm');
-    const handleForm = (e) => {
+    const handleForm = async (e) => {
       e.preventDefault();
+      const action = actionSelect ? actionSelect.value : 'full_renew';
+      const amountPaid = parseFloat(amountInput.value) || 0;
       const method = document.getElementById('renewMethod').value;
+      const ref = (refInput ? refInput.value : '').trim();
 
-      member.status = 'active';
-      const durationDays = member.plan && member.plan.includes('VIP') ? 90 : (member.plan && member.plan.includes('Anual') ? 365 : 30);
-      member.daysLeft = durationDays;
-      member.dueAmount = 0.0;
-      const d = new Date();
-      d.setDate(d.getDate() + durationDays);
-      member.expiration = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+      let concept = '';
+      if (action === 'full_renew') {
+        concept = 'Renovación Mensual (+30 días)';
+        member.status = 'active';
+        const durationDays = member.plan && member.plan.includes('VIP') ? 90 : (member.plan && member.plan.includes('Anual') ? 365 : 30);
+        member.daysLeft = durationDays;
+        member.dueAmount = 0.0;
+        const d = new Date();
+        d.setDate(d.getDate() + durationDays);
+        member.expiration = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+      } else if (action === 'settle_debt') {
+        concept = 'Liquidación total de deuda';
+        member.dueAmount = 0.0;
+        member.status = 'active';
+        if (member.daysLeft <= 0) {
+          member.daysLeft = 30;
+          const d = new Date();
+          d.setDate(d.getDate() + 30);
+          member.expiration = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+      } else if (action === 'partial_abono') {
+        concept = `Abono parcial a membresía ($${amountPaid.toFixed(2)})`;
+        const base = currentDue > 0 ? currentDue : planPrice;
+        const newDue = Math.max(0, base - amountPaid);
+        member.dueAmount = newDue;
+        if (newDue === 0) {
+          member.status = 'active';
+          if (member.daysLeft <= 0) {
+            member.daysLeft = 30;
+            const d = new Date();
+            d.setDate(d.getDate() + 30);
+            member.expiration = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+          }
+        } else {
+          member.status = 'expired'; // Tiene deuda pendiente
+        }
+      }
+
+      if (ref) {
+        const noteEntry = `[${new Date().toLocaleDateString('es-VE')}]: Cobro $${amountPaid.toFixed(2)} via ${method} (Ref: ${ref})`;
+        member.notes = member.notes ? `${member.notes} | ${noteEntry}` : noteEntry;
+      }
+
       saveMembers();
-      syncMemberToCloud(member);
+      await syncMemberToCloud(member);
 
       closeModal(modal);
       form.removeEventListener('submit', handleForm);
 
       playSuccessSound();
-      showToast(`Membresía renovada con éxito (${method}).`);
+      showToast(`Pago de $${amountPaid.toFixed(2)} registrado con éxito en la nube.`);
       updateKPIs();
       renderDirectory();
+
+      // Mostrar Recibo Digital para WhatsApp
+      showDigitalReceipt(member, concept, amountPaid, method, ref);
 
       // Si estábamos en check-in, actualizar la tarjeta de validación
       const sectionCheckin = document.getElementById('viewCheckinSection');
       if (sectionCheckin && sectionCheckin.classList.contains('is-active')) {
-        handleCheckIn(member, 'Recepción (Pago Renovado)');
+        handleCheckIn(member, `Recepción (${concept})`);
       }
     };
 
     form.onsubmit = handleForm;
+  }
+
+  function showDigitalReceipt(member, concept, amountPaid, method, ref) {
+    const receiptModal = document.getElementById('recModalReceipt');
+    const contentBox = document.getElementById('receiptContentBox');
+    const btnCopy = document.getElementById('btnCopyReceipt');
+    if (!receiptModal || !contentBox) return;
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
+
+    const receiptText = [
+      '========================================',
+      '        FERREIRA FITNESS GYM 🏆',
+      '          COMPROBANTE DE PAGO',
+      '========================================',
+      `Fecha: ${dateStr} · ${timeStr}`,
+      `Socio: ${member.name}`,
+      `Cédula: ${member.cedula} (${member.id})`,
+      `Plan: ${member.plan || 'Plan Musculación'}`,
+      '----------------------------------------',
+      `Concepto: ${concept}`,
+      `Monto Abonado: $${amountPaid.toFixed(2)} USD`,
+      `Forma de Pago: ${method}`,
+      ref ? `Referencia: ${ref}` : '',
+      '----------------------------------------',
+      `Estado de Acceso: ${member.status === 'active' ? '✅ SOLVENTE / ACTIVO' : '⚠️ PAGO PENDIENTE'}`,
+      `Vence: ${member.expiration} (${member.daysLeft} días restantes)`,
+      `Deuda Pendiente: $${(Number(member.dueAmount) || 0).toFixed(2)} USD`,
+      '========================================',
+      '  ¡Gracias por entrenar con nosotros! 💪',
+    ].filter(Boolean).join('\n');
+
+    contentBox.textContent = receiptText;
+
+    if (btnCopy) {
+      btnCopy.onclick = () => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(receiptText).then(() => {
+            showToast('📋 ¡Comprobante copiado! Listo para pegar en WhatsApp.');
+          });
+        } else {
+          showToast('Selecciona el texto y cópialo manualmente.');
+        }
+      };
+    }
+
+    openModal(receiptModal);
   }
 
   function openNewMemberModal() {
