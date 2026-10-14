@@ -1,13 +1,17 @@
 /**
  * Ferreira Fitness GYM – Sistema de Recepción y Control de Acceso
- * Gestión de asistencias, verificación de membresías, escaneo QR y aforo en sala.
+ * Módulos:
+ * 1. Check-In en Vivo & Torno (Doble vía: Manual + QR / Escáner USB)
+ * 2. Cartera de Socios, Control de Deudores & Cobranzas por WhatsApp
+ * 3. Gestión y Alta Rápida de Clientes del Gimnasio
+ * 4. Control de Aforo en Sala & Reportes CSV
  */
 
 (function () {
   'use strict';
 
   // ==========================================
-  // BASE DE DATOS INICIAL DE SOCIOS (Mock & LocalStorage)
+  // BASE DE DATOS INICIAL DE SOCIOS
   // ==========================================
   const INITIAL_MEMBERS = [
     {
@@ -15,6 +19,7 @@
       cedula: '28.412.983',
       name: 'Eduardo Ferreira',
       plan: 'Plan VIP Trimestral',
+      price: 90.0,
       status: 'active',
       trainer: 'Carlos Méndez (Fuerza)',
       avatar: 'assets/img/trainer_carlos.jpg',
@@ -22,13 +27,16 @@
       expiration: '07 Nov 2026',
       goal: 'Hipertrofia & Fuerza Explosiva',
       phone: '+58 412 8492019',
-      notes: 'Miembro VIP Fundador. Rutina A (Piernas/Hombros).'
+      notes: 'Miembro VIP Fundador. Rutina A (Piernas/Hombros).',
+      attendancesCount: 42,
+      dueAmount: 0.0
     },
     {
       id: 'FF-COLON-01492',
       cedula: '26.118.490',
       name: 'José Ramírez',
       plan: 'Plan Musculación Mensual',
+      price: 35.0,
       status: 'active',
       trainer: 'Carlos Méndez (Fuerza)',
       avatar: 'assets/img/before_after_jose.jpg',
@@ -36,13 +44,16 @@
       expiration: '26 Oct 2026',
       goal: 'Fuerza Máxima & Aumento Magro',
       phone: '+58 414 7829103',
-      notes: 'Superó su récord en Press Banca ayer (+5kg).'
+      notes: 'Superó su récord en Press Banca ayer (+5kg).',
+      attendancesCount: 28,
+      dueAmount: 0.0
     },
     {
       id: 'FF-COLON-02381',
       cedula: '29.301.218',
       name: 'María Gómez',
       plan: 'Plan Pérdida de Grasa & HIIT',
+      price: 40.0,
       status: 'active',
       trainer: 'Andrea Rivas (Pérdida)',
       avatar: 'assets/img/before_after_maria.jpg',
@@ -50,13 +61,16 @@
       expiration: '02 Nov 2026',
       goal: 'Definición & Tonificación',
       phone: '+58 424 5519283',
-      notes: 'Fija en clase funcional matutina.'
+      notes: 'Fija en clase funcional matutina.',
+      attendancesCount: 35,
+      dueAmount: 0.0
     },
     {
       id: 'FF-COLON-03910',
       cedula: '24.918.239',
       name: 'Carlos Mendoza',
       plan: 'Plan Mensual Clásico',
+      price: 35.0,
       status: 'expired',
       trainer: 'Luis Morales (Funcional)',
       avatar: '',
@@ -65,13 +79,15 @@
       goal: 'Resistencia Cardiovascular',
       phone: '+58 412 3918291',
       dueAmount: 35.0,
-      notes: 'Pendiente pago mes de Octubre.'
+      notes: 'Pendiente pago del mes de Octubre.',
+      attendancesCount: 19
     },
     {
       id: 'FF-COLON-04182',
       cedula: '27.481.902',
       name: 'Andrea Rivas',
       plan: 'Pase Anual Ferreira Black',
+      price: 320.0,
       status: 'active',
       trainer: 'Staff Ferreira Team',
       avatar: 'assets/img/trainer_andrea.jpg',
@@ -79,13 +95,16 @@
       expiration: '26 Abr 2027',
       goal: 'Acondicionamiento General',
       phone: '+58 416 8829102',
-      notes: 'Acceso total barra de suplementos y toalla.'
+      notes: 'Acceso total barra de suplementos y toalla.',
+      attendancesCount: 110,
+      dueAmount: 0.0
     },
     {
       id: 'FF-COLON-05291',
       cedula: '30.192.482',
       name: 'Pedro Silva',
       plan: 'Pase de Día',
+      price: 3.0,
       status: 'active',
       trainer: 'Sin entrenador asignado',
       avatar: '',
@@ -93,13 +112,16 @@
       expiration: 'Hoy (22:00)',
       goal: 'Entrenamiento de Pierna Libre',
       phone: '+58 414 1182910',
-      notes: 'Visitante recurrente.'
+      notes: 'Visitante recurrente de fin de semana.',
+      attendancesCount: 4,
+      dueAmount: 0.0
     },
     {
       id: 'FF-COLON-06183',
       cedula: '25.829.102',
       name: 'Marcos Peña',
       plan: 'Plan Mensual Clásico',
+      price: 35.0,
       status: 'expired',
       trainer: 'Carlos Méndez (Fuerza)',
       avatar: '',
@@ -108,13 +130,15 @@
       goal: 'Masa Muscular',
       phone: '+58 412 8829104',
       dueAmount: 35.0,
-      notes: 'Notificado vía WhatsApp hace 2 días.'
+      notes: 'Notificado vía WhatsApp hace 2 días.',
+      attendancesCount: 14
     },
     {
       id: 'FF-COLON-07291',
       cedula: '28.991.029',
       name: 'Sofia Benítez',
       plan: 'Plan VIP Trimestral',
+      price: 90.0,
       status: 'active',
       trainer: 'Andrea Rivas (Pérdida)',
       avatar: '',
@@ -122,25 +146,96 @@
       expiration: '28 Nov 2026',
       goal: 'Glúteos & Core',
       phone: '+58 424 9918291',
-      notes: 'Al día en recepción.'
+      notes: 'Al día en recepción.',
+      attendancesCount: 22,
+      dueAmount: 0.0
+    },
+    {
+      id: 'FF-COLON-08102',
+      cedula: '23.491.021',
+      name: 'Daniela Colmenares',
+      plan: 'Plan Pérdida de Grasa & HIIT',
+      price: 40.0,
+      status: 'expired',
+      trainer: 'Andrea Rivas (Pérdida)',
+      avatar: '',
+      daysLeft: -5,
+      expiration: '09 Oct 2026',
+      goal: 'Reducción de Medidas',
+      phone: '+58 414 6629102',
+      dueAmount: 40.0,
+      notes: 'Entrena en horario vespertino.',
+      attendancesCount: 31
+    },
+    {
+      id: 'FF-COLON-09412',
+      cedula: '27.102.948',
+      name: 'Javier Morales',
+      plan: 'Plan Musculación Mensual',
+      price: 35.0,
+      status: 'active',
+      trainer: 'Luis Morales (Funcional)',
+      avatar: '',
+      daysLeft: 4,
+      expiration: '18 Oct 2026',
+      goal: 'Fuerza Básica',
+      phone: '+58 424 8819203',
+      notes: 'Próximo a vencer en 4 días.',
+      attendancesCount: 16,
+      dueAmount: 0.0
+    },
+    {
+      id: 'FF-COLON-10293',
+      cedula: '29.849.201',
+      name: 'Valentina Castillo',
+      plan: 'Plan VIP Trimestral',
+      price: 90.0,
+      status: 'active',
+      trainer: 'Carlos Méndez (Fuerza)',
+      avatar: '',
+      daysLeft: 6,
+      expiration: '20 Oct 2026',
+      goal: 'Tonificación Completa',
+      phone: '+58 412 5591023',
+      notes: 'Avisar renovación al salir.',
+      attendancesCount: 39,
+      dueAmount: 0.0
+    },
+    {
+      id: 'FF-COLON-11482',
+      cedula: '22.391.042',
+      name: 'Roberto Torres',
+      plan: 'Plan Mensual Clásico',
+      price: 35.0,
+      status: 'expired',
+      trainer: 'Staff Ferreira Team',
+      avatar: '',
+      daysLeft: -12,
+      expiration: '02 Oct 2026',
+      goal: 'Salud y Movilidad',
+      phone: '+58 416 3391028',
+      dueAmount: 35.0,
+      notes: 'Solicitó congelamiento pero no entregó justificativo.',
+      attendancesCount: 8
     }
   ];
 
-  // Storage Keys
-  const STORAGE_MEMBERS = 'ff_gym_members_v1';
-  const STORAGE_ATTENDANCE = 'ff_gym_attendance_v1';
-  const MAX_CAPACITY = 60; // Aforo máximo del gimnasio
+  // Storage Keys & Constants
+  const STORAGE_MEMBERS = 'ff_gym_members_v2';
+  const STORAGE_ATTENDANCE = 'ff_gym_attendance_v2';
+  const MAX_CAPACITY = 60;
 
   // State
   let members = [];
   let attendance = [];
-  let currentFilter = 'all'; // 'all', 'inside', 'checked-out'
+  let currentAttendanceFilter = 'all'; // 'all', 'inside', 'checked-out'
+  let currentDirFilter = 'all'; // 'all', 'debtors', 'active', 'expiring'
+  let selectedMemberId = null;
   let audioCtx = null;
   let cameraStream = null;
 
   // ==========================================
-  // SINTETIZADOR DE SONIDO (Web Audio API)
-  // Sin archivos externos: suena nativo en cualquier navegador
+  // SINTETIZADOR DE AUDIO NATIVO (Web Audio API)
   // ==========================================
   function initAudio() {
     if (!audioCtx) {
@@ -158,7 +253,6 @@
       if (!audioCtx) return;
       const now = audioCtx.currentTime;
 
-      // Primer tono suave (880 Hz - La5)
       const osc1 = audioCtx.createOscillator();
       const gain1 = audioCtx.createGain();
       osc1.type = 'sine';
@@ -171,7 +265,6 @@
       osc1.start(now);
       osc1.stop(now + 0.22);
 
-      // Segundo tono agudo y armónico (1318.5 Hz - Mi6)
       const osc2 = audioCtx.createOscillator();
       const gain2 = audioCtx.createGain();
       osc2.type = 'sine';
@@ -192,13 +285,12 @@
       if (!audioCtx) return;
       const now = audioCtx.currentTime;
 
-      // Tono de advertencia doble (330 Hz -> 261 Hz)
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(320, now);
       osc.frequency.setValueAtTime(240, now + 0.12);
-      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.setValueAtTime(0.16, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
@@ -219,7 +311,6 @@
       if (storedAttendance) {
         attendance = JSON.parse(storedAttendance);
       } else {
-        // Inicializar con 3 ingresos simulados del día
         const now = new Date();
         attendance = [
           {
@@ -261,6 +352,10 @@
     } catch (e) {
       members = [...INITIAL_MEMBERS];
       attendance = [];
+    }
+
+    if (!selectedMemberId && members.length > 0) {
+      selectedMemberId = members[0].id;
     }
   }
 
@@ -307,15 +402,87 @@
   }
 
   // ==========================================
-  // ACTUALIZACIÓN DE INDICADORES (KPIS)
+  // NAVEGACIÓN ENTRE VISTAS (Check-in vs Cartera)
+  // ==========================================
+  function switchView(viewName) {
+    const tabCheckin = document.getElementById('tabViewCheckin');
+    const tabDirectory = document.getElementById('tabViewDirectory');
+    const sectionCheckin = document.getElementById('viewCheckinSection');
+    const sectionDirectory = document.getElementById('viewDirectorySection');
+
+    if (!tabCheckin || !tabDirectory || !sectionCheckin || !sectionDirectory) return;
+
+    if (viewName === 'checkin') {
+      tabCheckin.classList.add('is-active');
+      tabDirectory.classList.remove('is-active');
+      sectionCheckin.classList.add('is-active');
+      sectionDirectory.classList.remove('is-active');
+      const searchInput = document.getElementById('recSearchInput');
+      if (searchInput) searchInput.focus();
+    } else {
+      tabDirectory.classList.add('is-active');
+      tabCheckin.classList.remove('is-active');
+      sectionDirectory.classList.add('is-active');
+      sectionCheckin.classList.remove('is-active');
+      renderDirectory();
+    }
+  }
+
+  function setupViewSwitcher() {
+    const tabCheckin = document.getElementById('tabViewCheckin');
+    const tabDirectory = document.getElementById('tabViewDirectory');
+
+    if (tabCheckin) {
+      tabCheckin.addEventListener('click', () => switchView('checkin'));
+    }
+    if (tabDirectory) {
+      tabDirectory.addEventListener('click', () => switchView('directory'));
+    }
+
+    // Clics interactivos en las tarjetas KPI superiores
+    const cardKpiAforo = document.getElementById('cardKpiAforo');
+    if (cardKpiAforo) {
+      cardKpiAforo.addEventListener('click', () => {
+        switchView('checkin');
+        const filterInsideBtn = document.querySelector('.rec-pill-btn[data-filter="inside"]');
+        if (filterInsideBtn) filterInsideBtn.click();
+        const tableCard = document.querySelector('.rec-table-card');
+        if (tableCard) tableCard.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    const cardKpiSolvency = document.getElementById('cardKpiSolvency');
+    if (cardKpiSolvency) {
+      cardKpiSolvency.addEventListener('click', () => {
+        switchView('directory');
+        setDirectoryFilter('active');
+      });
+    }
+
+    const cardKpiExpired = document.getElementById('cardKpiExpired');
+    if (cardKpiExpired) {
+      cardKpiExpired.addEventListener('click', () => {
+        switchView('directory');
+        setDirectoryFilter('debtors');
+      });
+    }
+  }
+
+  // ==========================================
+  // KPIS GENERALES & RESUMEN DE CARTERA
   // ==========================================
   function updateKPIs() {
     const insideCount = attendance.filter((a) => a.status === 'inside').length;
     const totalToday = attendance.length;
-    const expiredCount = members.filter((m) => m.status === 'expired').length;
+    const debtorsList = members.filter((m) => m.status === 'expired');
+    const expiredCount = debtorsList.length;
     const activeCount = members.filter((m) => m.status === 'active').length;
     const solvencyRate = members.length > 0 ? Math.round((activeCount / members.length) * 100) : 100;
 
+    // Calcular deuda acumulada en USD
+    const totalDebt = debtorsList.reduce((acc, m) => acc + (m.dueAmount || 35.0), 0);
+
+    // KPIs Superiores
     const aforoNumEl = document.getElementById('kpiAforoNum');
     const aforoFillEl = document.getElementById('kpiAforoFill');
     const aforoSubEl = document.getElementById('kpiAforoSub');
@@ -342,10 +509,331 @@
         if (aforoSubEl) aforoSubEl.innerHTML = '<span style="color:#10b981;font-weight:700;">🟢 Espacio Óptimo</span> · Aforo al ' + pct + '%';
       }
     }
+
+    // Badges en Tabs de Subheader
+    const badgeInside = document.getElementById('badgeInsideCount');
+    if (badgeInside) badgeInside.textContent = `${insideCount} en sala`;
+
+    const badgeDebt = document.getElementById('badgeDebtCount');
+    if (badgeDebt) badgeDebt.textContent = `${expiredCount} deudores`;
+
+    // Resumen en la vista de Directorio
+    const sumTotalEl = document.getElementById('summaryTotalMembers');
+    const sumActiveEl = document.getElementById('summaryActiveMembers');
+    const sumDebtEl = document.getElementById('summaryDebtMembers');
+    const sumDebtAmtEl = document.getElementById('summaryTotalDebtAmount');
+
+    if (sumTotalEl) sumTotalEl.textContent = String(members.length);
+    if (sumActiveEl) sumActiveEl.textContent = `${activeCount} (${solvencyRate}%)`;
+    if (sumDebtEl) sumDebtEl.textContent = `${expiredCount} socios`;
+    if (sumDebtAmtEl) sumDebtAmtEl.textContent = `$${totalDebt.toFixed(2)} USD`;
+
+    // Pills counts en Directorio
+    const pillAll = document.getElementById('countPillAll');
+    const pillDebtors = document.getElementById('countPillDebtors');
+    const pillActive = document.getElementById('countPillActive');
+    const pillExpiring = document.getElementById('countPillExpiring');
+
+    const expiringCount = members.filter((m) => m.status === 'active' && m.daysLeft <= 7 && m.daysLeft >= 0).length;
+
+    if (pillAll) pillAll.textContent = String(members.length);
+    if (pillDebtors) pillDebtors.textContent = String(expiredCount);
+    if (pillActive) pillActive.textContent = String(activeCount);
+    if (pillExpiring) pillExpiring.textContent = String(expiringCount);
   }
 
   // ==========================================
-  // BUSCADOR INTELIGENTE EN VIVO
+  // CARTERA DE SOCIOS & GESTIÓN DE DEUDORES
+  // ==========================================
+  function setDirectoryFilter(filterName) {
+    currentDirFilter = filterName;
+    const buttons = document.querySelectorAll('.rec-pill-btn[data-dir-filter]');
+    buttons.forEach((b) => {
+      b.classList.toggle('is-active', b.dataset.dirFilter === filterName);
+    });
+    renderDirectory();
+  }
+
+  function setupDirectoryControls() {
+    const filterButtons = document.querySelectorAll('.rec-pill-btn[data-dir-filter]');
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setDirectoryFilter(btn.dataset.dirFilter);
+      });
+    });
+
+    const searchInput = document.getElementById('recDirSearchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        renderDirectory();
+      });
+    }
+  }
+
+  function getFilteredMembers() {
+    const searchVal = (document.getElementById('recDirSearchInput')?.value || '').trim().toLowerCase();
+
+    return members.filter((m) => {
+      // Filtro de estado
+      let matchesFilter = true;
+      if (currentDirFilter === 'debtors') {
+        matchesFilter = m.status === 'expired';
+      } else if (currentDirFilter === 'active') {
+        matchesFilter = m.status === 'active';
+      } else if (currentDirFilter === 'expiring') {
+        matchesFilter = m.status === 'active' && m.daysLeft <= 7 && m.daysLeft >= 0;
+      }
+
+      if (!matchesFilter) return false;
+
+      // Filtro de texto
+      if (!searchVal) return true;
+      const cleanCedula = m.cedula.replace(/[\.\-\s]/g, '');
+      const cleanSearch = searchVal.replace(/[\.\-\s]/g, '');
+
+      return (
+        m.name.toLowerCase().includes(searchVal) ||
+        m.cedula.toLowerCase().includes(searchVal) ||
+        cleanCedula.includes(cleanSearch) ||
+        (m.phone && m.phone.includes(searchVal)) ||
+        m.id.toLowerCase().includes(searchVal)
+      );
+    });
+  }
+
+  function renderDirectory() {
+    const container = document.getElementById('recMemberListContainer');
+    if (!container) return;
+
+    const filtered = getFilteredMembers();
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div style="padding: 2.5rem 1rem; text-align: center; color: var(--muted); font-size: 0.88rem;">
+          No se encontraron socios con este filtro o búsqueda.<br>
+          <button type="button" class="btn btn--primary btnOpenNewMember" style="margin-top: 1rem; font-size: 0.8rem;">
+            + Inscribir Nuevo Socio
+          </button>
+        </div>
+      `;
+      renderMemberDetail(null);
+      return;
+    }
+
+    // Si el socio seleccionado no está en la lista filtrada, seleccionar el primero
+    if (!filtered.some((m) => m.id === selectedMemberId)) {
+      selectedMemberId = filtered[0].id;
+    }
+
+    container.innerHTML = filtered
+      .map((m) => {
+        const isSelected = m.id === selectedMemberId;
+        const isDebtor = m.status === 'expired';
+        const isExpiring = m.status === 'active' && m.daysLeft <= 7;
+
+        let statusClass = isDebtor ? 'is-debtor' : 'is-active-member';
+        let statusBadge = '';
+
+        if (isDebtor) {
+          statusBadge = `<span class="rec-mc-debt-pill">Debe $${(m.dueAmount || 35).toFixed(2)} (${Math.abs(m.daysLeft)}d)</span>`;
+        } else if (isExpiring) {
+          statusBadge = `<span class="rec-mc-solvency-pill" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.3);">Vence en ${m.daysLeft} días</span>`;
+        } else {
+          statusBadge = `<span class="rec-mc-solvency-pill">Al Día (${m.daysLeft}d)</span>`;
+        }
+
+        const avatarHtml = m.avatar
+          ? `<img src="${m.avatar}" class="rec-mc-avatar" alt="${m.name}">`
+          : `<div class="rec-mc-avatar">${m.name.charAt(0)}</div>`;
+
+        return `
+        <div class="rec-member-card ${statusClass} ${isSelected ? 'is-selected' : ''}" data-member-id="${m.id}">
+          <div class="rec-mc-left">
+            ${avatarHtml}
+            <div>
+              <div class="rec-mc-name">${m.name}</div>
+              <div class="rec-mc-sub">${m.id} · C.I. ${m.cedula}</div>
+              <div class="rec-mc-sub" style="color: #ffffff; font-weight: 600;">${m.plan}</div>
+            </div>
+          </div>
+          <div class="rec-mc-right">
+            ${statusBadge}
+            <span style="font-size: 0.72rem; color: var(--muted);">${m.phone || 'Sin WhatsApp'}</span>
+          </div>
+        </div>
+      `;
+      })
+      .join('');
+
+    // Listener de clic para seleccionar un socio
+    container.querySelectorAll('.rec-member-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        selectedMemberId = card.dataset.memberId;
+        renderDirectory();
+      });
+    });
+
+    // Renderizar detalle del seleccionado
+    const selectedMember = members.find((m) => m.id === selectedMemberId) || filtered[0];
+    renderMemberDetail(selectedMember);
+  }
+
+  function renderMemberDetail(member) {
+    const pane = document.getElementById('recMemberDetailPane');
+    if (!pane) return;
+
+    if (!member) {
+      pane.innerHTML = `
+        <div style="padding: 3rem 1rem; text-align: center; color: var(--muted);">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👥</div>
+          <h4 style="font-family: var(--font-display); font-size: 1.4rem; color: #fff;">SIN SOCIO SELECCIONADO</h4>
+          <p style="font-size: 0.85rem;">Selecciona un socio de la lista para ver su estado financiero y cobrar.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const isDebtor = member.status === 'expired';
+    const isExpiring = member.status === 'active' && member.daysLeft <= 7;
+    const dueAmount = (member.dueAmount || member.price || 35.0).toFixed(2);
+
+    const avatarHtml = member.avatar
+      ? `<img src="${member.avatar}" class="rec-mp-avatar" alt="${member.name}">`
+      : `<div class="rec-mp-avatar">${member.name.charAt(0)}</div>`;
+
+    // Mensaje pre-llenado de WhatsApp profesional
+    const cleanPhone = (member.phone || '').replace(/[^0-9]/g, '');
+    const reminderMsg = encodeURIComponent(
+      `*Recordatorio de Pago – Ferreira Fitness GYM* 🏋️\n\n` +
+      `Hola ${member.name}, te escribimos de recepción de Ferreira Fitness GYM.\n` +
+      `Te recordamos que tu cuota correspondiente a *${member.plan}* tiene un saldo pendiente de *$${dueAmount} USD* (venció el ${member.expiration}).\n\n` +
+      `Puedes pasar renovando por recepción (Efectivo, Pago Móvil o Punto de Venta) para mantener tu carnet activo. ¡Te esperamos para seguir entrenando fuerte!`
+    );
+
+    const whatsappUrl = cleanPhone
+      ? `https://wa.me/${cleanPhone}?text=${reminderMsg}`
+      : `https://wa.me/?text=${reminderMsg}`;
+
+    pane.innerHTML = `
+      <div class="rec-member-profile">
+        ${avatarHtml}
+        <div class="rec-mp-name">${member.name}</div>
+        <div class="rec-mp-meta">${member.id} · C.I. ${member.cedula}</div>
+        <div style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:#fff; background:var(--surface-2); padding:0.3rem 0.75rem; border-radius:999px; border:1px solid var(--border);">
+          <span>📱 ${member.phone || 'Teléfono no registrado'}</span>
+        </div>
+      </div>
+
+      <!-- Cuadro Financiero -->
+      <div class="rec-finance-box ${isDebtor ? 'is-debtor' : ''}">
+        <div class="rec-finance-header">
+          <span style="font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase;">
+            Estado de Membresía
+          </span>
+          <span class="${isDebtor ? 'rec-badge-expired' : 'rec-badge-active'}">
+            ${isDebtor ? '🔴 PAGO VENCIDO' : (isExpiring ? '🟡 POR VENCER' : '🟢 AL DÍA / SOLVENTE')}
+          </span>
+        </div>
+
+        <div class="rec-finance-grid">
+          <div>
+            <div style="font-size:0.7rem; color:var(--muted); font-weight:700; text-transform:uppercase;">Plan Asignado</div>
+            <div style="font-size:0.95rem; font-weight:700; color:#fff;">${member.plan}</div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem; color:var(--muted); font-weight:700; text-transform:uppercase;">Costo del Plan</div>
+            <div style="font-size:0.95rem; font-weight:700; color:#fff;">$${(member.price || 35).toFixed(2)} USD</div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem; color:var(--muted); font-weight:700; text-transform:uppercase;">Vencimiento</div>
+            <div style="font-size:0.95rem; font-weight:700; color:${isDebtor ? '#f87171' : '#34d399'};">
+              ${isDebtor ? 'Venció hace ' + Math.abs(member.daysLeft) + ' días' : member.expiration}
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.7rem; color:var(--muted); font-weight:700; text-transform:uppercase;">Total Adeudado</div>
+            <div style="font-size:1.3rem; font-family:var(--font-display); color:${isDebtor ? '#f87171' : '#34d399'};">
+              $${isDebtor ? dueAmount : '0.00'} USD
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuadro de Entrenamiento & Salud -->
+      <div style="background:#0d0d0d; border:1px solid var(--border); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.5rem; text-align:left;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.6rem;">
+          <div>
+            <span style="font-size:0.7rem; font-weight:700; color:var(--muted); text-transform:uppercase;">Entrenador Asignado:</span>
+            <div style="font-size:0.9rem; font-weight:700; color:#fff;">${member.trainer || 'Ferreira Team'}</div>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:0.7rem; font-weight:700; color:var(--muted); text-transform:uppercase;">Asistencias Totales:</span>
+            <div style="font-size:1.1rem; font-family:var(--font-display); color:#fff;">${member.attendancesCount || 0} visitas</div>
+          </div>
+        </div>
+        <div>
+          <span style="font-size:0.7rem; font-weight:700; color:var(--muted); text-transform:uppercase;">Notas / Meta:</span>
+          <p style="font-size:0.8rem; color:var(--muted); margin-top:0.2rem; line-height:1.4;">
+            ${member.notes || member.goal || 'Sin observaciones registradas.'}
+          </p>
+        </div>
+      </div>
+
+      <!-- Acciones de Gestión de Cobro -->
+      <div class="rec-profile-actions">
+        <button type="button" class="btn btn--primary" id="btnDetailRenew" style="width:100%; justify-content:center;">
+          💵 Cobrar en Recepción & Renovar Membresía
+        </button>
+
+        ${isDebtor || isExpiring ? `
+          <a href="${whatsappUrl}" target="_blank" rel="noopener" class="rec-btn-whatsapp">
+            <svg viewBox="0 0 32 32" width="20" height="20" fill="currentColor"><path d="M16 3C9 3 3.3 8.6 3.3 15.6c0 2.2.6 4.4 1.7 6.3L3 29l7.3-1.9c1.8 1 3.8 1.5 5.8 1.5 7 0 12.7-5.6 12.7-12.6S23 3 16 3zm0 23.1c-1.9 0-3.7-.5-5.3-1.4l-.4-.2-4.3 1.1 1.2-4.2-.3-.4c-1-1.6-1.5-3.5-1.5-5.4C5.4 9.9 10.2 5.2 16 5.2s10.6 4.7 10.6 10.4S21.8 26.1 16 26.1zm5.8-7.8c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.6-.9-.8-1.6-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.2 3.1 1.3 3.3c.2.2 2.3 3.5 5.5 4.9.8.3 1.4.5 1.9.7.8.2 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.7-.4z"/></svg>
+            Enviar Recordatorio por WhatsApp
+          </a>
+        ` : ''}
+
+        <div style="display:flex; gap:0.5rem; margin-top:0.25rem;">
+          <button type="button" class="rec-btn-ghost" id="btnDetailCheckIn" style="flex:1; justify-content:center;">
+            ⚡ Marcar Entrada Hoy
+          </button>
+          <button type="button" class="rec-btn-ghost" id="btnDetailDelete" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Dar de baja socio">
+            🗑️ Dar de Baja
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Bindings de botones en la ficha detallada
+    const btnDetailRenew = document.getElementById('btnDetailRenew');
+    if (btnDetailRenew) {
+      btnDetailRenew.addEventListener('click', () => openRenewModal(member));
+    }
+
+    const btnDetailCheckIn = document.getElementById('btnDetailCheckIn');
+    if (btnDetailCheckIn) {
+      btnDetailCheckIn.addEventListener('click', () => {
+        switchView('checkin');
+        handleCheckIn(member, 'Manual (Desde Ficha)');
+      });
+    }
+
+    const btnDetailDelete = document.getElementById('btnDetailDelete');
+    if (btnDetailDelete) {
+      btnDetailDelete.addEventListener('click', () => {
+        if (confirm(`¿Estás seguro de dar de baja a ${member.name} (${member.id})?`)) {
+          members = members.filter((m) => m.id !== member.id);
+          saveMembers();
+          showToast(`Socio ${member.name} eliminado de la cartera.`);
+          selectedMemberId = members.length > 0 ? members[0].id : null;
+          updateKPIs();
+          renderDirectory();
+        }
+      });
+    }
+  }
+
+  // ==========================================
+  // BUSCADOR RÁPIDO PARA CHECK-IN
   // ==========================================
   function setupSearch() {
     const input = document.getElementById('recSearchInput');
@@ -360,7 +848,6 @@
         return;
       }
 
-      // Filtrar por nombre, cédula limpia o código de socio
       const matches = members.filter((m) => {
         const cleanCedula = m.cedula.replace(/[\.\-\s]/g, '');
         const cleanQuery = query.replace(/[\.\-\s]/g, '');
@@ -372,10 +859,9 @@
         );
       });
 
-      renderResults(matches);
+      renderSearchResults(matches);
     });
 
-    // Atajos de teclado: Enter para seleccionar el primer resultado
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -395,7 +881,6 @@
       }
     });
 
-    // Cerrar resultados al hacer clic fuera
     document.addEventListener('click', (e) => {
       if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
         resultsBox.classList.remove('is-open');
@@ -403,7 +888,7 @@
     });
   }
 
-  function renderResults(matches) {
+  function renderSearchResults(matches) {
     const resultsBox = document.getElementById('recSearchResults');
     if (!resultsBox) return;
 
@@ -411,14 +896,14 @@
       resultsBox.innerHTML = `
         <div style="padding: 1.25rem; text-align: center; color: var(--muted); font-size: 0.85rem;">
           No se encontró ningún socio con esos datos.<br>
-          <button type="button" class="rec-btn-ghost" id="btnQuickRegisterFromSearch" style="margin-top: 0.75rem; font-size: 0.78rem;">
-            + Registrar como Nuevo Socio / Pase
+          <button type="button" class="rec-btn-ghost btnOpenNewMember" style="margin-top: 0.75rem; font-size: 0.78rem;">
+            + Inscribir Nuevo Socio
           </button>
         </div>
       `;
       resultsBox.classList.add('is-open');
 
-      const btnNew = document.getElementById('btnQuickRegisterFromSearch');
+      const btnNew = resultsBox.querySelector('.btnOpenNewMember');
       if (btnNew) {
         btnNew.addEventListener('click', () => openNewMemberModal());
       }
@@ -429,7 +914,7 @@
       .map((m) => {
         const isExpired = m.status === 'expired';
         const badge = isExpired
-          ? '<span class="rec-badge-expired">Vencida</span>'
+          ? `<span class="rec-badge-expired">Debe $${(m.dueAmount || 35).toFixed(2)}</span>`
           : '<span class="rec-badge-active">Al Día</span>';
         const avatar = m.avatar
           ? `<img src="${m.avatar}" class="rec-result-avatar" alt="${m.name}">`
@@ -467,7 +952,7 @@
   }
 
   // ==========================================
-  // PROCESAMIENTO DE CHECK-IN Y FEEDBACK EN PANTALLA
+  // FEEDBACK EN PANTALLA GIGANTE (CHECK-IN)
   // ==========================================
   function handleCheckIn(member, method = 'Manual') {
     const cardEl = document.getElementById('recValidationCard');
@@ -477,26 +962,22 @@
 
     const isExpired = member.status === 'expired';
 
-    // Disparar sonido correspondiente
     if (isExpired) {
       playAlertSound();
     } else {
       playSuccessSound();
     }
 
-    // Configurar clases visuales de la tarjeta gigante
     cardEl.classList.remove('is-success', 'is-expired');
     cardEl.classList.add(isExpired ? 'is-expired' : 'is-success');
 
     idleEl.style.display = 'none';
     resultEl.classList.add('is-visible');
 
-    // Avatar o inicial
     const avatarHtml = member.avatar
       ? `<img src="${member.avatar}" class="rec-val-avatar" alt="${member.name}">`
       : `<div class="rec-val-avatar">${member.name.charAt(0)}</div>`;
 
-    // Banner de estado
     const bannerHtml = isExpired
       ? `<div class="rec-val-banner is-expired">
            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -507,7 +988,6 @@
            ACCESO AUTORIZADO · PLAN VIP ACTIVO
          </div>`;
 
-    // Botones de acción dinámicos
     const actionsHtml = isExpired
       ? `
         <button type="button" class="btn btn--primary" id="btnRenewPayment" style="background:#ef4444;border-color:#ef4444;color:#fff;">
@@ -560,12 +1040,10 @@
       </div>
     `;
 
-    // Si está al día, registrar asistencia automáticamente
     if (!isExpired) {
       registerAttendance(member, method);
     }
 
-    // Bindings de botones en la tarjeta de resultado
     const btnRenew = document.getElementById('btnRenewPayment');
     if (btnRenew) {
       btnRenew.addEventListener('click', () => openRenewModal(member));
@@ -600,10 +1078,12 @@
     const existingIndex = attendance.findIndex((a) => a.memberId === member.id && a.status === 'inside');
 
     if (existingIndex !== -1) {
-      // Ya estaba dentro, avisar
-      showToast(`${member.name} ya se encontraba dentro de la sala.`);
+      showToast(`${member.name} ya se encontraba registrado en sala.`);
       return;
     }
+
+    member.attendancesCount = (member.attendancesCount || 0) + 1;
+    saveMembers();
 
     const newRecord = {
       id: 'ATT-' + Date.now(),
@@ -619,7 +1099,7 @@
 
     attendance.unshift(newRecord);
     saveAttendance();
-    renderTable();
+    renderAttendanceTable();
     updateKPIs();
     showToast(`✅ Acceso concedido: ${member.name}`);
   }
@@ -630,7 +1110,7 @@
       record.status = 'checked-out';
       record.timeOut = formatHour(new Date());
       saveAttendance();
-      renderTable();
+      renderAttendanceTable();
       updateKPIs();
       showToast(`🚪 Salida registrada: ${record.memberName}`);
     } else {
@@ -655,23 +1135,23 @@
   }
 
   // ==========================================
-  // TABLA EN VIVO DE ASISTENCIAS DEL DÍA
+  // TABLA DE ASISTENCIAS DEL DÍA
   // ==========================================
-  function renderTable() {
+  function renderAttendanceTable() {
     const tbody = document.getElementById('recTableBody');
     if (!tbody) return;
 
     let filtered = attendance;
-    if (currentFilter === 'inside') {
+    if (currentAttendanceFilter === 'inside') {
       filtered = attendance.filter((a) => a.status === 'inside');
-    } else if (currentFilter === 'checked-out') {
+    } else if (currentAttendanceFilter === 'checked-out') {
       filtered = attendance.filter((a) => a.status === 'checked-out');
     }
 
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align: center; padding: 2rem; color: var(--muted);">
+          <td colspan="6" style="text-align: center; padding: 2rem; color: var(--muted);">
             No hay asistencias registradas con este filtro.
           </td>
         </tr>
@@ -721,7 +1201,7 @@
           record.status = 'checked-out';
           record.timeOut = formatHour(new Date());
           saveAttendance();
-          renderTable();
+          renderAttendanceTable();
           updateKPIs();
           showToast(`Salida registrada para ${record.memberName}`);
         }
@@ -729,14 +1209,14 @@
     });
   }
 
-  function setupFilters() {
+  function setupAttendanceFilters() {
     const filterBtns = document.querySelectorAll('.rec-pill-btn[data-filter]');
     filterBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         filterBtns.forEach((b) => b.classList.remove('is-active'));
         btn.classList.add('is-active');
-        currentFilter = btn.dataset.filter;
-        renderTable();
+        currentAttendanceFilter = btn.dataset.filter;
+        renderAttendanceTable();
       });
     });
   }
@@ -797,7 +1277,6 @@
 
   // ==========================================
   // ESCÁNER DE PISTOLA USB (Lectura por Teclado)
-  // Las pistolas USB leen el código y terminan con Enter
   // ==========================================
   function setupUsbBarcodeListener() {
     let barcodeBuffer = '';
@@ -806,7 +1285,7 @@
     window.addEventListener('keydown', (e) => {
       const activeTag = document.activeElement ? document.activeElement.tagName : '';
       if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
-        return; // No interferir cuando se escribe en un input
+        return;
       }
 
       const currentTime = Date.now();
@@ -827,7 +1306,6 @@
   }
 
   function processScannedPayload(payload) {
-    // Si viene en formato FERREIRA_FITNESS_MEMBER:ID:NOMBRE:STATUS
     let lookup = payload.trim();
     if (lookup.startsWith('FERREIRA_FITNESS_MEMBER:')) {
       const parts = lookup.split(':');
@@ -850,9 +1328,6 @@
     }
   }
 
-  // ==========================================
-  // DEMO CHIPS (Prueba en 1 clic para el cliente)
-  // ==========================================
   function setupDemoChips() {
     const chips = document.querySelectorAll('.rec-demo-chip[data-demo-id]');
     chips.forEach((chip) => {
@@ -867,7 +1342,7 @@
   }
 
   // ==========================================
-  // MODALES (Renovación de Pago & Nuevo Socio)
+  // MODALES (COBRO Y NUEVO SOCIO)
   // ==========================================
   function openRenewModal(member) {
     const modal = document.getElementById('recModalRenew');
@@ -875,7 +1350,7 @@
 
     document.getElementById('renewMemberName').textContent = member.name;
     document.getElementById('renewMemberId').textContent = `${member.id} · C.I. ${member.cedula}`;
-    document.getElementById('renewAmount').textContent = `$${(member.dueAmount || 35.0).toFixed(2)} USD`;
+    document.getElementById('renewAmount').textContent = `$${(member.dueAmount || member.price || 35.0).toFixed(2)} USD`;
 
     modal.classList.add('is-open');
 
@@ -884,9 +1359,9 @@
       e.preventDefault();
       const method = document.getElementById('renewMethod').value;
 
-      // Actualizar miembro a activo y extender 30 días
       member.status = 'active';
       member.daysLeft = 30;
+      member.dueAmount = 0.0;
       const d = new Date();
       d.setDate(d.getDate() + 30);
       member.expiration = d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -897,8 +1372,14 @@
 
       playSuccessSound();
       showToast(`Membresía renovada con éxito (${method}).`);
-      handleCheckIn(member, 'Recepción (Pago Renovado)');
       updateKPIs();
+      renderDirectory();
+
+      // Si estábamos en check-in, actualizar la tarjeta de validación
+      const sectionCheckin = document.getElementById('viewCheckinSection');
+      if (sectionCheckin && sectionCheckin.classList.contains('is-active')) {
+        handleCheckIn(member, 'Recepción (Pago Renovado)');
+      }
     };
 
     form.onsubmit = handleForm;
@@ -914,27 +1395,44 @@
       e.preventDefault();
       const name = document.getElementById('newMemberName').value.trim();
       const cedula = document.getElementById('newMemberCedula').value.trim();
+      const phone = document.getElementById('newMemberPhone').value.trim() || '+58 412 0000000';
       const plan = document.getElementById('newMemberPlan').value;
       const trainer = document.getElementById('newMemberTrainer').value;
+      const initialStatus = document.getElementById('newMemberInitialPayment').value;
+      const notes = document.getElementById('newMemberNotes').value.trim();
+
+      // Determinar precio del plan
+      let planPrice = 35.0;
+      if (plan.includes('VIP')) planPrice = 90.0;
+      else if (plan.includes('Pérdida')) planPrice = 40.0;
+      else if (plan.includes('Anual')) planPrice = 320.0;
+      else if (plan.includes('Día')) planPrice = 3.0;
 
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const isPaid = initialStatus === 'active';
+
       const newMember = {
         id: `FF-COLON-${randomSuffix}`,
         cedula: cedula,
         name: name,
+        phone: phone,
         plan: plan,
-        status: 'active',
+        price: planPrice,
+        status: initialStatus,
         trainer: trainer,
         avatar: '',
-        daysLeft: 30,
-        expiration: new Date(Date.now() + 30 * 86400000).toLocaleDateString('es-VE', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric'
-        }),
+        daysLeft: isPaid ? 30 : -1,
+        expiration: isPaid
+          ? new Date(Date.now() + 30 * 86400000).toLocaleDateString('es-VE', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric'
+            })
+          : 'Pendiente de Pago',
         goal: 'Entrenamiento Integral',
-        phone: '+58 412 0000000',
-        notes: 'Inscripción rápida en recepción.'
+        notes: notes || 'Inscripción en mostrador de recepción.',
+        attendancesCount: isPaid ? 1 : 0,
+        dueAmount: isPaid ? 0.0 : planPrice
       };
 
       members.unshift(newMember);
@@ -944,9 +1442,15 @@
       form.reset();
 
       playSuccessSound();
-      showToast(`Nuevo socio registrado: ${newMember.name}`);
-      handleCheckIn(newMember, 'Inscripción en Recepción');
+      showToast(`¡Socio inscrito con éxito!: ${newMember.name}`);
+      selectedMemberId = newMember.id;
       updateKPIs();
+      renderDirectory();
+
+      // Si está pagado, registrar entrada directa en check-in
+      if (isPaid) {
+        handleCheckIn(newMember, 'Inscripción en Recepción');
+      }
     };
   }
 
@@ -958,12 +1462,11 @@
       });
     });
 
-    const btnNewMember = document.getElementById('btnOpenNewMember');
-    if (btnNewMember) {
-      btnNewMember.addEventListener('click', () => openNewMemberModal());
-    }
+    const newMemberButtons = document.querySelectorAll('.btnOpenNewMember');
+    newMemberButtons.forEach((btn) => {
+      btn.addEventListener('click', () => openNewMemberModal());
+    });
 
-    // Botón simular escáner
     const btnSimulateScan = document.getElementById('btnSimulateScan');
     if (btnSimulateScan) {
       btnSimulateScan.addEventListener('click', () => {
@@ -972,13 +1475,11 @@
       });
     }
 
-    // Botón exportar CSV
     const btnExport = document.getElementById('btnExportCsv');
     if (btnExport) {
       btnExport.addEventListener('click', () => exportAttendanceCsv());
     }
 
-    // Botón pantalla completa
     const btnFullscreen = document.getElementById('btnToggleFullscreen');
     if (btnFullscreen) {
       btnFullscreen.addEventListener('click', () => {
@@ -990,17 +1491,17 @@
       });
     }
 
-    // Botón reiniciar datos
     const btnReset = document.getElementById('btnResetDemoData');
     if (btnReset) {
       btnReset.addEventListener('click', () => {
-        if (confirm('¿Restablecer datos de prueba a valores iniciales?')) {
+        if (confirm('¿Restablecer cartera de socios y asistencias a valores iniciales de demostración?')) {
           localStorage.removeItem(STORAGE_MEMBERS);
           localStorage.removeItem(STORAGE_ATTENDANCE);
           loadData();
-          renderTable();
+          renderAttendanceTable();
           updateKPIs();
-          showToast('Datos demo restaurados.');
+          renderDirectory();
+          showToast('Datos demo restaurados con éxito.');
         }
       });
     }
@@ -1034,9 +1535,6 @@
     showToast('Reporte CSV descargado con éxito.');
   }
 
-  // ==========================================
-  // TOAST NOTIFICATIONS
-  // ==========================================
   function showToast(message) {
     const toast = document.getElementById('recToast');
     if (!toast) return;
@@ -1049,21 +1547,23 @@
   }
 
   // ==========================================
-  // INICIALIZACIÓN
+  // INICIALIZACIÓN GENERAL
   // ==========================================
   document.addEventListener('DOMContentLoaded', () => {
     loadData();
     startClock();
     updateKPIs();
-    renderTable();
+    renderAttendanceTable();
     setupSearch();
-    setupFilters();
+    setupAttendanceFilters();
     setupTabs();
     setupUsbBarcodeListener();
     setupDemoChips();
     setupModals();
+    setupViewSwitcher();
+    setupDirectoryControls();
+    renderDirectory();
 
-    // Autofocus en el campo de búsqueda para operación rápida
     const searchInput = document.getElementById('recSearchInput');
     if (searchInput) searchInput.focus();
   });

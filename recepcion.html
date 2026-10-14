@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ferreira Fitness GYM | Recepción & Control de Asistencia</title>
-  <meta name="description" content="Sistema de recepción, control de acceso, aforo y validación de membresías para Ferreira Fitness GYM." />
+  <meta name="description" content="Sistema de recepción, control de acceso, aforo y gestión de membresías y cobranzas para Ferreira Fitness GYM." />
   <meta name="theme-color" content="#000000" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -50,10 +50,24 @@
     </div>
   </header>
 
-  <!-- ============ BARRA DE KPIS EN VIVO ============ -->
+  <!-- ============ SUBHEADER NAVEGACIÓN DE VISTAS ============ -->
+  <nav class="rec-view-nav">
+    <button type="button" class="rec-view-tab is-active" id="tabViewCheckin">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+      Check-In en Vivo
+      <span class="rec-tab-badge" id="badgeInsideCount">0 en sala</span>
+    </button>
+    <button type="button" class="rec-view-tab" id="tabViewDirectory">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      Cartera de Socios & Deudores
+      <span class="rec-tab-badge is-danger" id="badgeDebtCount">0 deudores</span>
+    </button>
+  </nav>
+
+  <!-- ============ BARRA DE KPIS EN VIVO (INTERACTIVOS) ============ -->
   <section class="rec-kpis">
-    <!-- Aforo Actual -->
-    <div class="rec-kpi">
+    <!-- Aforo Actual (Clic para ver quiénes están dentro) -->
+    <div class="rec-kpi is-clickable" id="cardKpiAforo" title="Ver alumnos actualmente en sala">
       <div class="rec-kpi__header">
         <span class="rec-kpi__label">Aforo en Sala</span>
         <div class="rec-kpi__icon">
@@ -79,8 +93,8 @@
       <div class="rec-kpi__sub">Asistencias registradas en este turno</div>
     </div>
 
-    <!-- Tasa de Solvencia -->
-    <div class="rec-kpi">
+    <!-- Tasa de Solvencia (Clic para ver socios al día) -->
+    <div class="rec-kpi is-clickable" id="cardKpiSolvency" title="Ver lista de socios al día">
       <div class="rec-kpi__header">
         <span class="rec-kpi__label">Socios al Día</span>
         <div class="rec-kpi__icon">
@@ -88,11 +102,11 @@
         </div>
       </div>
       <div class="rec-kpi__value" id="kpiSolvencyNum">100%</div>
-      <div class="rec-kpi__sub">Membresías activas solventes</div>
+      <div class="rec-kpi__sub">Membresías activas solventes (Clic para ver)</div>
     </div>
 
-    <!-- Pendientes de Pago -->
-    <div class="rec-kpi">
+    <!-- Pendientes de Pago (Clic para ver deudores) -->
+    <div class="rec-kpi is-clickable" id="cardKpiExpired" title="Ver lista de deudores y cobrar">
       <div class="rec-kpi__header">
         <span class="rec-kpi__label">Cobros Pendientes</span>
         <div class="rec-kpi__icon" style="color: #ef4444;">
@@ -100,165 +114,256 @@
         </div>
       </div>
       <div class="rec-kpi__value" id="kpiExpiredNum" style="color: #f87171;">0</div>
-      <div class="rec-kpi__sub">Socios con cuota vencida este mes</div>
+      <div class="rec-kpi__sub">Socios con cuota vencida (Clic para cobrar)</div>
     </div>
   </section>
 
-  <!-- ============ ÁREA PRINCIPAL: VALIDACIÓN Y CHECK-IN ============ -->
-  <main class="rec-main">
+  <!-- ========================================================
+       VISTA 1: CHECK-IN EN VIVO Y CONTROL DE ACCESO
+       ======================================================== -->
+  <div id="viewCheckinSection" class="rec-view-section is-active">
     
-    <!-- COLUMNA IZQUIERDA: PANELES DE ENTRADA -->
-    <div class="rec-card">
-      <div class="rec-card__head">
-        <h2 class="rec-card__title">CONTROL DE INGRESO</h2>
-        <div style="display:flex;gap:0.5rem;">
-          <button type="button" class="rec-btn-ghost" id="btnOpenNewMember" style="font-size: 0.76rem;">
-            + Nuevo Socio
-          </button>
-          <span class="rec-card__tag">MOSTRADOR</span>
-        </div>
-      </div>
-
-      <!-- Selector de Método: Búsqueda Manual vs Escáner QR -->
-      <div class="rec-tabs">
-        <button type="button" class="rec-tab is-active" id="tabModeSearch">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          Búsqueda Manual (Cédula / Nombre)
-        </button>
-        <button type="button" class="rec-tab" id="tabModeScanner">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          Cámara / Lector QR
-        </button>
-      </div>
-
-      <!-- PANEL 1: BÚSQUEDA MANUAL (Para cuando olvidaron el móvil) -->
-      <div id="panelSearch">
-        <div class="rec-search-box">
-          <svg class="rec-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input
-            type="text"
-            id="recSearchInput"
-            class="rec-search-input"
-            placeholder="Escribe Cédula, Nombre o Código (ej. Eduardo, 28412, FF-00842)..."
-            autocomplete="off"
-          />
-          <div class="rec-search-hint">
-            <span>Presiona <strong>Enter</strong> para seleccionar el primer resultado</span>
-            <span>Atajo: Esc para limpiar</span>
+    <main class="rec-main">
+      <!-- COLUMNA IZQUIERDA: PANELES DE ENTRADA -->
+      <div class="rec-card">
+        <div class="rec-card__head">
+          <h2 class="rec-card__title">CONTROL DE INGRESO</h2>
+          <div style="display:flex;gap:0.5rem;">
+            <button type="button" class="rec-btn-ghost btnOpenNewMember" style="font-size: 0.76rem;">
+              + Inscribir Socio
+            </button>
+            <span class="rec-card__tag">MOSTRADOR</span>
           </div>
         </div>
 
-        <!-- Dropdown de resultados en vivo -->
-        <div class="rec-results" id="recSearchResults"></div>
-      </div>
+        <!-- Selector de Método: Búsqueda Manual vs Escáner QR -->
+        <div class="rec-tabs">
+          <button type="button" class="rec-tab is-active" id="tabModeSearch">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Búsqueda Manual (Cédula / Nombre)
+          </button>
+          <button type="button" class="rec-tab" id="tabModeScanner">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Cámara / Lector QR
+          </button>
+        </div>
 
-      <!-- PANEL 2: ESCÁNER QR & CÁMARA WEBCAM -->
-      <div id="panelScanner" class="rec-scanner">
-        <div class="rec-scanner-frame">
-          <video id="recScannerVideo" class="rec-scanner-video" muted playsinline></video>
-          <div class="rec-laser-line"></div>
-          <div class="rec-scanner-target"></div>
-          <div style="position: absolute; bottom: 12px; font-size: 0.72rem; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px;">
-            Apunta el carnet digital de la app al marco
+        <!-- PANEL 1: BÚSQUEDA MANUAL (Para cuando olvidaron el móvil) -->
+        <div id="panelSearch">
+          <div class="rec-search-box">
+            <svg class="rec-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input
+              type="text"
+              id="recSearchInput"
+              class="rec-search-input"
+              placeholder="Escribe Cédula, Nombre o Código (ej. Eduardo, 28412, FF-00842)..."
+              autocomplete="off"
+            />
+            <div class="rec-search-hint">
+              <span>Presiona <strong>Enter</strong> para seleccionar el primer resultado</span>
+              <span>Atajo: Esc para limpiar</span>
+            </div>
+          </div>
+
+          <!-- Dropdown de resultados en vivo -->
+          <div class="rec-results" id="recSearchResults"></div>
+        </div>
+
+        <!-- PANEL 2: ESCÁNER QR & CÁMARA WEBCAM -->
+        <div id="panelScanner" class="rec-scanner">
+          <div class="rec-scanner-frame">
+            <video id="recScannerVideo" class="rec-scanner-video" muted playsinline></video>
+            <div class="rec-laser-line"></div>
+            <div class="rec-scanner-target"></div>
+            <div style="position: absolute; bottom: 12px; font-size: 0.72rem; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px;">
+              Apunta el carnet digital de la app al marco
+            </div>
+          </div>
+          <div class="rec-scanner-controls">
+            <button type="button" class="btn btn--primary" id="btnSimulateScan" style="flex: 1; font-size: 0.85rem; padding: 0.65rem;">
+              📱 Simular Escaneo Móvil (Eduardo)
+            </button>
           </div>
         </div>
-        <div class="rec-scanner-controls">
-          <button type="button" class="btn btn--primary" id="btnSimulateScan" style="flex: 1; font-size: 0.85rem; padding: 0.65rem;">
-            📱 Simular Escaneo Móvil (Eduardo)
-          </button>
+
+        <!-- Quick Demo Chips: Pruebas rápidas para la reunión con el dueño -->
+        <div class="rec-quick-demo">
+          <div class="rec-quick-demo__title">Pruebas Rápidas de Demostración:</div>
+          <div class="rec-demo-chips">
+            <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-00842" title="Probar socio VIP activo">
+              🟢 Eduardo Ferreira (VIP Activo)
+            </button>
+            <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-01492" title="Probar socio mensual">
+              🟢 José Ramírez (Musculación)
+            </button>
+            <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-03910" title="Probar socio con cuota vencida">
+              🔴 Carlos Mendoza (Vencido)
+            </button>
+            <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-05291" title="Probar pase de día">
+              🟡 Pedro Silva (Pase de Día)
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Quick Demo Chips: Pruebas rápidas para la reunión con el dueño -->
-      <div class="rec-quick-demo">
-        <div class="rec-quick-demo__title">Pruebas Rápidas de Demostración:</div>
-        <div class="rec-demo-chips">
-          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-00842" title="Probar socio VIP activo">
-            🟢 Eduardo Ferreira (VIP Activo)
-          </button>
-          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-01492" title="Probar socio mensual">
-            🟢 José Ramírez (Musculación)
-          </button>
-          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-03910" title="Probar socio con cuota vencida">
-            🔴 Carlos Mendoza (Vencido)
-          </button>
-          <button type="button" class="rec-demo-chip" data-demo-id="FF-COLON-05291" title="Probar pase de día">
-            🟡 Pedro Silva (Pase de Día)
-          </button>
+      <!-- COLUMNA DERECHA: TARJETA GIGANTE DE VALIDACIÓN -->
+      <div class="rec-card rec-validation-card" id="recValidationCard">
+        
+        <!-- Estado de Espera (Idle) -->
+        <div class="rec-val-idle" id="recValIdle">
+          <div class="rec-val-idle__icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="12" y2="16"></line></svg>
+          </div>
+          <h3 class="rec-val-idle__title">LISTO PARA VALIDAR</h3>
+          <p class="rec-val-idle__text">
+            Acerca el carnet digital de la app al lector o escribe el nombre/cédula del alumno en el buscador para registrar el acceso.
+          </p>
+        </div>
+
+        <!-- Estado de Resultado (Se llena dinámicamente) -->
+        <div class="rec-val-result" id="recValResult"></div>
+      </div>
+    </main>
+
+    <!-- TABLERO DE ASISTENCIAS DEL DÍA -->
+    <section class="rec-history-wrap">
+      <div class="rec-table-card">
+        <div class="rec-table-toolbar">
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 1px;">
+              REGISTRO DE ASISTENCIAS DE HOY
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--muted);">Entradas y salidas registradas en el turno actual.</p>
+          </div>
+
+          <div style="display:flex; align-items:center; gap: 0.85rem; flex-wrap:wrap;">
+            <!-- Filtros de Asistencia -->
+            <div class="rec-filter-pills">
+              <button type="button" class="rec-pill-btn is-active" data-filter="all">Todos</button>
+              <button type="button" class="rec-pill-btn" data-filter="inside">En Sala Ahora</button>
+              <button type="button" class="rec-pill-btn" data-filter="checked-out">Salidas</button>
+            </div>
+
+            <!-- Acciones de Datos -->
+            <button type="button" class="rec-btn-ghost" id="btnExportCsv" title="Exportar asistencias a Excel/CSV">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Exportar CSV
+            </button>
+            <button type="button" class="rec-btn-ghost" id="btnResetDemoData" title="Restablecer datos iniciales de prueba" style="color: var(--muted);">
+              🔄 Reset Demo
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla Reactiva -->
+        <div class="rec-table-container">
+          <table class="rec-table">
+            <thead>
+              <tr>
+                <th>Hora Ingreso</th>
+                <th>Socio / Cédula</th>
+                <th>Plan de Membresía</th>
+                <th>Método</th>
+                <th>Estado en Sala</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="recTableBody">
+              <!-- Filas dinámicas -->
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- COLUMNA DERECHA: TARJETA GIGANTE DE VALIDACIÓN (FEEDBACK EN PANTALLA) -->
-    <div class="rec-card rec-validation-card" id="recValidationCard">
+  </div>
+
+  <!-- ========================================================
+       VISTA 2: CARTERA DE SOCIOS, DEUDORES Y COBRANZAS
+       ======================================================== -->
+  <div id="viewDirectorySection" class="rec-view-section">
+    
+    <div class="rec-directory-wrap">
       
-      <!-- Estado de Espera (Idle) -->
-      <div class="rec-val-idle" id="recValIdle">
-        <div class="rec-val-idle__icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="12" y2="16"></line></svg>
+      <!-- Resumen Financiero de Cartera y Cobranzas -->
+      <div class="rec-debt-summary">
+        <div class="rec-debt-stats">
+          <div class="rec-debt-stat-item">
+            <span class="rec-debt-stat-label">Total Clientes Registrados</span>
+            <span class="rec-debt-stat-val" id="summaryTotalMembers">0</span>
+          </div>
+          <div class="rec-debt-stat-item">
+            <span class="rec-debt-stat-label">Socios Solventes</span>
+            <span class="rec-debt-stat-val" style="color: #34d399;" id="summaryActiveMembers">0</span>
+          </div>
+          <div class="rec-debt-stat-item">
+            <span class="rec-debt-stat-label">Total Deudores</span>
+            <span class="rec-debt-stat-val" style="color: #f87171;" id="summaryDebtMembers">0</span>
+          </div>
+          <div class="rec-debt-stat-item" style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
+            <span class="rec-debt-stat-label">Total por Cobrar (Deuda Vencida)</span>
+            <span class="rec-debt-stat-val" style="color: #f87171;" id="summaryTotalDebtAmount">$0.00 USD</span>
+          </div>
         </div>
-        <h3 class="rec-val-idle__title">LISTO PARA VALIDAR</h3>
-        <p class="rec-val-idle__text">
-          Acerca el carnet digital de la app al lector o escribe el nombre/cédula del alumno en el buscador para registrar el acceso.
-        </p>
+
+        <div style="display:flex; gap: 0.75rem;">
+          <button type="button" class="btn btn--primary btnOpenNewMember">
+            + Inscribir Nuevo Socio
+          </button>
+        </div>
       </div>
 
-      <!-- Estado de Resultado (Se llena dinámicamente) -->
-      <div class="rec-val-result" id="recValResult"></div>
-    </div>
+      <!-- Cuadrícula Directorio (Izquierda: Lista / Derecha: Ficha Detallada) -->
+      <div class="rec-directory-grid">
+        
+        <!-- Panel Izquierdo: Buscador y Lista de Socios -->
+        <div class="rec-dir-list-pane">
+          <div class="rec-dir-toolbar">
+            <!-- Buscador en la cartera -->
+            <div class="rec-search-box" style="margin-bottom: 0;">
+              <svg class="rec-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input
+                type="text"
+                id="recDirSearchInput"
+                class="rec-search-input"
+                placeholder="Filtrar por nombre, cédula o teléfono..."
+                style="padding: 0.75rem 1rem 0.75rem 2.6rem; font-size: 0.9rem;"
+              />
+            </div>
 
-  </main>
-
-  <!-- ============ PANEL INFERIOR: HISTORIAL DE ASISTENCIAS DEL DÍA ============ -->
-  <section class="rec-history-wrap">
-    <div class="rec-table-card">
-      <div class="rec-table-toolbar">
-        <div>
-          <h3 style="font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 1px;">
-            REGISTRO DE ASISTENCIAS DE HOY
-          </h3>
-          <p style="font-size: 0.8rem; color: var(--muted);">Entradas y salidas registradas en el turno actual.</p>
-        </div>
-
-        <div style="display:flex; align-items:center; gap: 0.85rem; flex-wrap:wrap;">
-          <!-- Filtros de Asistencia -->
-          <div class="rec-filter-pills">
-            <button type="button" class="rec-pill-btn is-active" data-filter="all">Todos</button>
-            <button type="button" class="rec-pill-btn" data-filter="inside">En Sala Ahora</button>
-            <button type="button" class="rec-pill-btn" data-filter="checked-out">Salidas</button>
+            <!-- Filtros de Estado -->
+            <div class="rec-dir-pills">
+              <button type="button" class="rec-pill-btn is-active" data-dir-filter="all" id="btnFilterAllMembers">
+                Todos (<span id="countPillAll">0</span>)
+              </button>
+              <button type="button" class="rec-pill-btn" data-dir-filter="debtors" id="btnFilterDebtors">
+                🔴 Deudores (<span id="countPillDebtors">0</span>)
+              </button>
+              <button type="button" class="rec-pill-btn" data-dir-filter="active" id="btnFilterActive">
+                🟢 Activos (<span id="countPillActive">0</span>)
+              </button>
+              <button type="button" class="rec-pill-btn" data-dir-filter="expiring" id="btnFilterExpiring">
+                🟡 Por Vencer en 7 días (<span id="countPillExpiring">0</span>)
+              </button>
+            </div>
           </div>
 
-          <!-- Acciones de Datos -->
-          <button type="button" class="rec-btn-ghost" id="btnExportCsv" title="Exportar asistencias a Excel/CSV">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Exportar CSV
-          </button>
-          <button type="button" class="rec-btn-ghost" id="btnResetDemoData" title="Restablecer datos iniciales de prueba" style="color: var(--muted);">
-            🔄 Reset Demo
-          </button>
+          <!-- Listado de Tarjetas de Socios -->
+          <div class="rec-dir-list" id="recMemberListContainer">
+            <!-- Generado dinámicamente -->
+          </div>
         </div>
+
+        <!-- Panel Derecho: Ficha Detallada del Socio Seleccionado -->
+        <div class="rec-dir-detail-pane" id="recMemberDetailPane">
+          <!-- Generado dinámicamente -->
+        </div>
+
       </div>
 
-      <!-- Tabla Reactiva -->
-      <div class="rec-table-container">
-        <table class="rec-table">
-          <thead>
-            <tr>
-              <th>Hora Ingreso</th>
-              <th>Socio / Cédula</th>
-              <th>Plan de Membresía</th>
-              <th>Método</th>
-              <th>Estado en Sala</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="recTableBody">
-            <!-- Filas dinámicas -->
-          </tbody>
-        </table>
-      </div>
     </div>
-  </section>
+
+  </div>
 
   <!-- ============ MODAL: COBRAR Y RENOVAR MEMBRESÍA ============ -->
   <div class="modal" id="recModalRenew" aria-hidden="true">
@@ -307,76 +412,113 @@
     </div>
   </div>
 
-  <!-- ============ MODAL: NUEVO SOCIO RÁPIDO ============ -->
+  <!-- ============ MODAL: NUEVO SOCIO COMPLETO ============ -->
   <div class="modal" id="recModalNewMember" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-close-modal></div>
-    <div class="modal__box" style="max-width: 480px;" role="dialog" aria-modal="true">
+    <div class="modal__box" style="max-width: 520px;" role="dialog" aria-modal="true">
       <button class="icon-btn modal__close" aria-label="Cerrar" data-close-modal>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
 
       <div style="font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 0.35rem;">
-        REGISTRO RÁPIDO DE SOCIO / PASE
+        INSCRIBIR NUEVO SOCIO
       </div>
       <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem;">
-        Inscribe a un nuevo miembro o pase de visita para concederle entrada inmediata.
+        Registra a un nuevo cliente en el sistema con sus datos, plan y estado de pago inicial.
       </p>
 
       <form id="newMemberForm">
-        <div style="margin-bottom: 0.85rem;">
-          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
-            Nombre y Apellido:
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+          <div>
+            <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+              Nombre y Apellido: *
+            </label>
+            <input
+              type="text"
+              id="newMemberName"
+              required
+              placeholder="Ej. Roberto Sánchez"
+              style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;"
+            />
+          </div>
+          <div>
+            <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+              Cédula (DNI): *
+            </label>
+            <input
+              type="text"
+              id="newMemberCedula"
+              required
+              placeholder="Ej. 27.819.012"
+              style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;"
+            />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+          <div>
+            <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+              Teléfono / WhatsApp:
+            </label>
+            <input
+              type="text"
+              id="newMemberPhone"
+              placeholder="+58 412 1234567"
+              style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;"
+            />
+          </div>
+          <div>
+            <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+              Estado de Pago Inicial:
+            </label>
+            <select id="newMemberInitialPayment" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;">
+              <option value="active">🟢 Pagado Hoy (Activo / Solvente)</option>
+              <option value="expired">🔴 Pendiente por Pagar (Deudor)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+          <div>
+            <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+              Plan de Entrenamiento:
+            </label>
+            <select id="newMemberPlan" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;">
+              <option value="Plan Musculación Mensual">Plan Musculación ($35.00)</option>
+              <option value="Plan VIP Trimestral">Plan VIP Trimestral ($90.00)</option>
+              <option value="Plan Pérdida de Grasa & HIIT">Plan Pérdida de Grasa ($40.00)</option>
+              <option value="Pase Anual Ferreira Black">Pase Anual Black ($320.00)</option>
+              <option value="Pase de Día">Pase de Día ($3.00)</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+              Entrenador de Referencia:
+            </label>
+            <select id="newMemberTrainer" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;">
+              <option value="Carlos Méndez (Fuerza)">Carlos Méndez (Fuerza)</option>
+              <option value="Andrea Rivas (Pérdida)">Andrea Rivas (Pérdida Peso)</option>
+              <option value="Luis Morales (Funcional)">Luis Morales (Funcional)</option>
+              <option value="Ferreira Team">Staff Ferreira</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
+            Objetivo / Notas Médicas:
           </label>
           <input
             type="text"
-            id="newMemberName"
-            required
-            placeholder="Ej. Roberto Sánchez"
-            style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;"
+            id="newMemberNotes"
+            placeholder="Ej. Ganar masa muscular, sin lesiones previas."
+            style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; color: #fff;"
           />
-        </div>
-
-        <div style="margin-bottom: 0.85rem;">
-          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
-            Cédula de Identidad (DNI):
-          </label>
-          <input
-            type="text"
-            id="newMemberCedula"
-            required
-            placeholder="Ej. 27.819.012"
-            style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;"
-          />
-        </div>
-
-        <div style="margin-bottom: 0.85rem;">
-          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
-            Plan a Asignar:
-          </label>
-          <select id="newMemberPlan" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;">
-            <option value="Plan Musculación Mensual">Plan Musculación Mensual ($35.00)</option>
-            <option value="Plan VIP Trimestral">Plan VIP Trimestral ($90.00)</option>
-            <option value="Plan Pérdida de Grasa & HIIT">Plan Pérdida de Grasa & HIIT ($40.00)</option>
-            <option value="Pase Anual Ferreira Black">Pase Anual Ferreira Black ($320.00)</option>
-            <option value="Pase de Día">Pase de Día ($3.00)</option>
-          </select>
-        </div>
-
-        <div style="margin-bottom: 1.35rem;">
-          <label style="display:block; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem;">
-            Entrenador de Referencia:
-          </label>
-          <select id="newMemberTrainer" style="width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff;">
-            <option value="Carlos Méndez (Fuerza)">Carlos Méndez (Fuerza & Hipertrofia)</option>
-            <option value="Andrea Rivas (Pérdida)">Andrea Rivas (Pérdida de Peso & Tonificación)</option>
-            <option value="Luis Morales (Funcional)">Luis Morales (Rendimiento & Funcional)</option>
-            <option value="Ferreira Team">Staff General Ferreira</option>
-          </select>
         </div>
 
         <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
           <button type="button" class="btn btn--ghost" data-close-modal>Cancelar</button>
-          <button type="submit" class="btn btn--primary">Registrar & Marcar Ingreso</button>
+          <button type="submit" class="btn btn--primary">Inscribir y Guardar Socio</button>
         </div>
       </form>
     </div>
