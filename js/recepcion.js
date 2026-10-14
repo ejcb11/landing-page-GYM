@@ -360,28 +360,80 @@
     try {
       const { data, error } = await supabaseClient.from('members').select('*');
       if (!error && Array.isArray(data) && data.length > 0) {
-        members = data.map((d) => ({
-          id: d.id,
-          cedula: d.cedula,
-          name: d.name,
-          phone: d.phone || '',
-          plan: d.plan,
-          price: parseFloat(d.price) || 35.0,
-          status: d.status,
-          trainer: d.trainer_name || 'Carlos Ferreira (Fuerza)',
-          avatar: d.avatar || '',
-          daysLeft: parseInt(d.days_left) || 30,
-          expiration: d.expiration,
-          goal: 'Entrenamiento Integral',
-          notes: d.notes || '',
-          attendancesCount: 0,
-          dueAmount: parseFloat(d.due_amount) || 0.0
-        }));
+        const prev = new Map(members.map((m) => [m.id, m]));
+        members = data.map((d) => {
+          const old = prev.get(d.id) || {};
+          return {
+            id: d.id,
+            cedula: d.cedula,
+            name: d.name,
+            phone: d.phone || '',
+            plan: d.plan,
+            price: parseFloat(d.price) || 35.0,
+            status: d.status,
+            trainer: d.trainer_name || 'Carlos Ferreira (Fuerza)',
+            avatar: d.avatar || old.avatar || '',
+            daysLeft: Number.isFinite(parseInt(d.days_left)) ? parseInt(d.days_left) : 30,
+            expiration: d.expiration,
+            goal: old.goal || 'Entrenamiento Integral',
+            notes: d.notes || '',
+            attendancesCount: old.attendancesCount || 0,
+            dueAmount: parseFloat(d.due_amount) || 0.0
+          };
+        });
+        if (!members.some((m) => m.id === selectedMemberId)) {
+          selectedMemberId = members[0].id;
+        }
         saveMembersLocally();
         updateKPIs();
         renderDirectory();
       }
     } catch (_) {}
+  }
+
+  // Trae las entradas registradas HOY (aforo y torno) para que cualquier equipo de recepción vea lo mismo.
+  async function syncAttendancesFromCloud() {
+    if (!supabaseClient) return;
+    try {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const { data, error } = await supabaseClient
+        .from('attendances')
+        .select('*')
+        .gte('created_at', start.toISOString())
+        .order('created_at', { ascending: false });
+      if (error || !Array.isArray(data)) return;
+
+      const cloud = data.map((d) => ({
+        id: d.id,
+        memberId: d.member_id,
+        memberName: d.member_name,
+        cedula: d.cedula,
+        plan: d.plan,
+        status: d.status,
+        timeIn: d.time_in,
+        timeOut: d.time_out,
+        method: d.method
+      }));
+      const cloudIds = new Set(cloud.map((a) => a.id));
+      // Conserva registros locales que aún no llegaron a la nube (modo sin conexión).
+      const localOnly = attendance.filter((a) => !cloudIds.has(a.id) && /^ATT-\d{10,}$/.test(a.id));
+      attendance = [...localOnly, ...cloud];
+      saveAttendance();
+      renderAttendanceTable();
+      updateKPIs();
+    } catch (_) {}
+  }
+
+  // Devuelve true si el socio realmente fue eliminado en la nube.
+  async function deleteMemberFromCloud(memberId) {
+    if (!supabaseClient) return false;
+    try {
+      const { data, error } = await supabaseClient.from('members').delete().eq('id', memberId).select();
+      return !error && Array.isArray(data) && data.length > 0;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ==========================================
@@ -445,6 +497,7 @@
 
     // Sincronizar en segundo plano con Supabase si está disponible
     syncMembersFromCloud();
+    syncAttendancesFromCloud();
   }
 
   function saveMembersLocally() {
@@ -911,11 +964,16 @@
 
     const btnDetailDelete = document.getElementById('btnDetailDelete');
     if (btnDetailDelete) {
-      btnDetailDelete.addEventListener('click', () => {
+      btnDetailDelete.addEventListener('click', async () => {
         if (confirm(`¿Estás seguro de dar de baja a ${member.name} (${member.id})?`)) {
+          const removedInCloud = await deleteMemberFromCloud(member.id);
           members = members.filter((m) => m.id !== member.id);
           saveMembers();
-          showToast(`Socio ${member.name} eliminado de la cartera.`);
+          showToast(
+            removedInCloud || !supabaseClient
+              ? `Socio ${member.name} eliminado de la cartera.`
+              : `⚠️ ${member.name} se quitó localmente pero la nube no permitió borrarlo (falta política DELETE en Supabase).`
+          );
           selectedMemberId = members.length > 0 ? members[0].id : null;
           updateKPIs();
           renderDirectory();
@@ -1345,9 +1403,14 @@
     });
   }
 
+  let scanLoopId = null;
+  let lastScanValue = '';
+  let lastScanTime = 0;
+
   async function startCamera() {
     const video = document.getElementById('recScannerVideo');
     if (!video) return;
+    stopCamera();
 
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -1355,14 +1418,61 @@
           video: { facingMode: 'environment' }
         });
         video.srcObject = cameraStream;
-        video.play();
+        await video.play();
+        startQrScanLoop(video);
       }
     } catch (err) {
       console.log('Cámara no disponible o permisos denegados. Usando modo simulación.');
+      showToast('📷 No se pudo acceder a la cámara. Usa la búsqueda manual o un escáner USB.');
     }
   }
 
+  // Lee fotogramas de la cámara y detecta códigos QR del carnet digital.
+  function startQrScanLoop(video) {
+    const hasNativeDetector = 'BarcodeDetector' in window;
+    const detector = hasNativeDetector ? new window.BarcodeDetector({ formats: ['qr_code'] }) : null;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    let busy = false;
+
+    const handleValue = (value) => {
+      const now = Date.now();
+      // Evita registrar varias veces el mismo QR mientras sigue frente a la cámara.
+      if (value === lastScanValue && now - lastScanTime < 4000) return;
+      lastScanValue = value;
+      lastScanTime = now;
+      processScannedPayload(value);
+    };
+
+    const tick = async () => {
+      if (!cameraStream) return;
+      if (!busy && video.readyState >= 2 && video.videoWidth > 0) {
+        busy = true;
+        try {
+          if (detector) {
+            const codes = await detector.detect(video);
+            if (codes.length > 0 && codes[0].rawValue) handleValue(codes[0].rawValue);
+          } else if (typeof window.jsQR === 'function') {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+            if (code && code.data) handleValue(code.data);
+          }
+        } catch (_) {}
+        busy = false;
+      }
+      scanLoopId = setTimeout(tick, 250);
+    };
+    tick();
+  }
+
   function stopCamera() {
+    if (scanLoopId) {
+      clearTimeout(scanLoopId);
+      scanLoopId = null;
+    }
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
       cameraStream = null;
@@ -1400,19 +1510,24 @@
   }
 
   function processScannedPayload(payload) {
-    let lookup = payload.trim();
-    if (lookup.startsWith('FERREIRA_FITNESS_MEMBER:')) {
-      const parts = lookup.split(':');
-      lookup = parts[1] || parts[0];
+    const raw = String(payload || '').trim();
+    let lookupId = raw;
+    let lookupCedula = raw;
+    if (raw.startsWith('FERREIRA_FITNESS_MEMBER:')) {
+      // Formato: FERREIRA_FITNESS_MEMBER:<id>:<cedula>:<nombre>:<estado> (el formato viejo trae el nombre en la 3ª posición)
+      const parts = raw.split(':');
+      lookupId = (parts[1] || '').trim();
+      lookupCedula = (parts[2] || '').trim();
     }
+    const clean = (s) => String(s || '').replace(/[\.\-\s]/g, '').toLowerCase();
 
     const member = members.find((m) => {
-      return (
-        m.id.toLowerCase() === lookup.toLowerCase() ||
-        m.id.toLowerCase().includes(lookup.toLowerCase()) ||
-        m.cedula.replace(/[\.\-\s]/g, '') === lookup.replace(/[\.\-\s]/g, '')
-      );
+      if (lookupId && m.id.toLowerCase() === lookupId.toLowerCase()) return true;
+      if (lookupCedula && clean(lookupCedula).length >= 5 && clean(m.cedula) === clean(lookupCedula)) return true;
+      return false;
     });
+
+    const lookup = lookupId || lookupCedula;
 
     if (member) {
       handleCheckIn(member, '📱 QR Móvil');
