@@ -498,6 +498,24 @@
     // Sincronizar en segundo plano con Supabase si está disponible
     syncMembersFromCloud();
     syncAttendancesFromCloud();
+
+    // Sincronización continua cada 4 segundos para actualizar fotos y asistencias en tiempo real
+    setInterval(() => {
+      syncMembersFromCloud();
+      syncAttendancesFromCloud();
+    }, 4000);
+
+    // Suscripción Realtime por WebSockets para cambios inmediatos
+    if (supabaseClient) {
+      try {
+        supabaseClient
+          .channel('public:members-stream')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, () => {
+            syncMembersFromCloud();
+          })
+          .subscribe();
+      } catch (_) {}
+    }
   }
 
   function saveMembersLocally() {
@@ -1533,32 +1551,41 @@
       return false;
     });
 
-    // 1. Si no está en memoria local, buscamos en tiempo real en Supabase (la nube)
-    if (!member && supabaseClient && (lookupId || lookupCedula)) {
+    // 1. Refrescamos SIEMPRE los datos más recientes (incluyendo foto/selfie actualizada) desde Supabase
+    if (supabaseClient && (lookupId || (member && member.id))) {
       try {
-        const conds = [];
-        if (lookupId) conds.push(`id.ilike.${lookupId}`);
-        if (lookupCedula && clean(lookupCedula).length >= 5) conds.push(`cedula.ilike.%${clean(lookupCedula)}%`);
-        if (conds.length > 0) {
-          const { data } = await supabaseClient.from('members').select('*').or(conds.join(',')).limit(1);
-          if (data && data.length > 0) {
-            const d = data[0];
+        const idToQuery = (member && member.id) ? member.id : lookupId;
+        const { data: cloudRow } = await supabaseClient
+          .from('members')
+          .select('*')
+          .eq('id', idToQuery)
+          .maybeSingle();
+
+        if (cloudRow) {
+          if (member) {
+            // Actualizamos en caliente la selfie (si cambió en la nube)
+            if (cloudRow.avatar !== undefined) member.avatar = cloudRow.avatar || '';
+            if (cloudRow.status) member.status = cloudRow.status;
+            if (cloudRow.days_left !== undefined) member.daysLeft = parseInt(cloudRow.days_left);
+            saveMembersLocally();
+          } else {
+            // Si el socio no existía en memoria, lo agregamos completo
             member = {
-              id: d.id,
-              cedula: d.cedula,
-              name: d.name,
-              phone: d.phone || '',
-              plan: d.plan,
-              price: parseFloat(d.price) || 35.0,
-              status: d.status,
-              trainer: d.trainer_name || 'Carlos Ferreira (Fuerza)',
-              avatar: d.avatar || '',
-              daysLeft: Number.isFinite(parseInt(d.days_left)) ? parseInt(d.days_left) : 30,
-              expiration: d.expiration,
+              id: cloudRow.id,
+              cedula: cloudRow.cedula,
+              name: cloudRow.name,
+              phone: cloudRow.phone || '',
+              plan: cloudRow.plan,
+              price: parseFloat(cloudRow.price) || 35.0,
+              status: cloudRow.status,
+              trainer: cloudRow.trainer_name || 'Carlos Ferreira (Fuerza)',
+              avatar: cloudRow.avatar || '',
+              daysLeft: Number.isFinite(parseInt(cloudRow.days_left)) ? parseInt(cloudRow.days_left) : 30,
+              expiration: cloudRow.expiration,
               goal: 'Entrenamiento Integral',
-              notes: d.notes || '',
+              notes: cloudRow.notes || '',
               attendancesCount: 0,
-              dueAmount: parseFloat(d.due_amount) || 0.0
+              dueAmount: parseFloat(cloudRow.due_amount) || 0.0
             };
             members.unshift(member);
             saveMembersLocally();
