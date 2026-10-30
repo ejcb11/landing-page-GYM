@@ -26,10 +26,20 @@ Sistema web diseñado para **Ferreira Fitness GYM** (San Juan de Colón, Táchir
 
 ---
 
-## Demostracion del Sistema de Recepcion
+## Demostraciones del Sistema
+
+### 1. Portal Comercial (Landing Page)
 
 <div align="center">
-  <img src="assets/screenshots/recepcion_demo.gif" width="95%" alt="Demostración interactiva del sistema de recepción" style="border-radius: 8px;" />
+  <img src="assets/screenshots/landing_demo.gif" width="95%" alt="Demostración de la landing page comercial" style="border-radius: 8px;" />
+</div>
+
+<br />
+
+### 2. Panel Operativo de Recepcion
+
+<div align="center">
+  <img src="assets/screenshots/recepcion_demo.gif" width="95%" alt="Demostración del sistema de recepción y control de acceso" style="border-radius: 8px;" />
 </div>
 
 ---
@@ -99,7 +109,7 @@ El sistema implementa una arquitectura orientada a eventos con persistencia cent
 ```text
 ├── assets/
 │   ├── img/                 # Recursos gráficos y fotografías del gimnasio
-│   └── screenshots/         # Capturas de pantalla e interfaces del sistema
+│   └── screenshots/         # Capturas de pantalla y demostraciones animadas
 ├── css/
 │   ├── styles.css           # Estilos de la landing page comercial
 │   └── recepcion.css        # Hoja de estilos del panel de recepción
@@ -117,30 +127,11 @@ El sistema implementa una arquitectura orientada a eventos con persistencia cent
 
 ---
 
-## Instalacion y Ejecucion Local
+## Alcance del Proyecto
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/ejcb11/landing-page-GYM.git
-   cd landing-page-GYM
-   ```
+Este repositorio forma parte de mi **portafolio profesional de desarrollo de software**, con el objetivo de exhibir la arquitectura técnica, diseño de interfaces y sincronización de datos en tiempo real construidas para **Ferreira Fitness GYM**.
 
-2. **Configurar variables de conexion:**
-   Edite el archivo `js/config.js` e introduzca las credenciales de su proyecto en Supabase:
-   ```javascript
-   const SUPABASE_URL = "https://tu-proyecto.supabase.co";
-   const SUPABASE_ANON_KEY = "tu-anon-key";
-   ```
-
-3. **Ejecutar servidor local:**
-   Puede abrir directamente los archivos con cualquier servidor HTTP local:
-   ```bash
-   # Utilizando Python
-   python -m http.server 8000
-
-   # O con extension Live Server en VS Code
-   ```
-   Acceda a `http://localhost:8000/index.html` para el portal comercial o `http://localhost:8000/recepcion.html` para el panel de recepción.
+El código y material multimedia se presentan como muestra técnica y vitrina de competencias en desarrollo Full Stack.
 
 ---
 
