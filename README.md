@@ -1,71 +1,153 @@
-# 🏋️ Ferreira Fitness GYM — Web Comercial & Sistema de Recepción
-
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![Supabase](https://img.shields.io/badge/Supabase-Realtime_DB-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-
-Ecosistema web completo para **Ferreira Fitness GYM** compuesto por una **Landing Page comercial de alta conversión** y un **Sistema de Recepción y Control de Acceso** sincronizado en tiempo real con una base de datos relacional en la nube (**Supabase / PostgreSQL**).
-
----
-
-## 📸 Capturas de la Plataforma
-
 <div align="center">
-  <img src="assets/img/hero_gym.jpg" alt="Hero Principal Ferreira Fitness" width="85%" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+  <img src="assets/screenshots/01_landing_hero.png" width="100%" alt="Ferreira Fitness GYM - Plataforma Web" style="border-radius: 8px;" />
 </div>
 
-<br/>
+<h1 align="center">Ferreira Fitness GYM</h1>
+<p align="center">
+  Plataforma web comercial y sistema de control de acceso en recepción sincronizado en tiempo real.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white" alt="HTML5" />
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
+  <img src="https://img.shields.io/badge/Supabase-Realtime_DB-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-316192?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+</p>
+
+---
+
+## Descripcion General
+
+Sistema web diseñado para **Ferreira Fitness GYM** (San Juan de Colón, Táchira), dividido en dos entornos operativos complementarios:
+
+1. **Portal Comercial de Captación (`index.html`):** Interfaz pública optimizada para conversión de prospectos, consulta de servicios, calculadora nutricional y agendamiento directo.
+2. **Sistema Operativo de Recepción (`recepcion.html`):** Panel administrativo para el mostrador del gimnasio que gestiona control de ingreso de socios, lectura de credenciales QR, monitoreo de aforo en sala y auditoría de cuotas vencidas en tiempo real.
+
+---
+
+## Demostracion del Sistema de Recepcion
 
 <div align="center">
-  <img src="assets/img/maquinas_nueva.jpg" alt="Área de Máquinas" width="42%" style="border-radius: 6px; margin: 4px;" />
-  <img src="assets/img/experiencia_nueva.jpg" alt="Instalaciones del Gimnasio" width="42%" style="border-radius: 6px; margin: 4px;" />
+  <img src="assets/screenshots/recepcion_demo.gif" width="95%" alt="Demostración interactiva del sistema de recepción" style="border-radius: 8px;" />
 </div>
 
 ---
 
-## 🚀 Módulos del Sistema
+## Modulos del Sistema
 
-### 1. Landing Page Comercial (`index.html`)
-* **Diseño Responsivo:** Adaptado a dispositivos móviles, tablets y monitores de escritorio.
-* **Catálogo Visual de Planes y Suplementos:** Presentación interactiva de membresías, servicios de entrenadores y tienda deportiva.
-* **Tracker de Métricas de Progreso (`tracker.js`):** Script para medir la interacción de los usuarios y prospectos con las diferentes secciones del sitio.
+### 1. Control de Acceso y Mostrador
 
-### 2. Módulo de Recepción y Control de Socios (`recepcion.html`)
-* **Panel Administrativo:** Permite a la recepción del gimnasio registrar el acceso de los miembros, validar planes activos y consultar membresías.
-* **Sincronización en Tiempo Real:** Integración con **Supabase Realtime** para actualizar el estatus de socios y rutinas de manera instantánea entre la app móvil de los entrenadores y la pantalla de recepción.
-* **Políticas de Seguridad en la Base de Datos:** Scripts SQL con **Row Level Security (RLS)** para control estricto de lectura y escritura de planes y socios (`supabase/create_routines_table.sql`).
+La interfaz de recepción centraliza el flujo diario del gimnasio mediante validación instantánea y métricas en vivo conectadas a la base de datos.
+
+<div align="center">
+  <img src="assets/screenshots/02_recepcion_checkin.png" width="95%" alt="Panel de Check-in en Vivo y Métricas de Aforo" style="border-radius: 6px;" />
+</div>
+
+* **Validacion Dual de Ingreso:** Admite escaneo por cámara de carnet digital QR y búsqueda asistida por cédula o nombre con atajos de teclado.
+* **Control de Aforo Activo:** Cálculo automático de ocupación en sala con semáforo de capacidad máxima y conteo de ingresos por turno.
+* **Filtros de Asistencia Diaria:** Segmentación rápida entre socios actualmente en sala, total de ingresos del día y salidas registradas.
+
+<br />
+
+### 2. Cartera de Socios y Auditoria de Pagos
+
+Módulo orientado a la administración de membresías activas, vencimientos y cobranzas en mostrador.
+
+<div align="center">
+  <img src="assets/screenshots/03_recepcion_cartera_socios.png" width="95%" alt="Gestión de Cartera de Socios y Cobros Pendientes" style="border-radius: 6px;" />
+</div>
+
+* **Balance Financiero Inmediato:** Totalización de ingresos por cobrar y conteo de cuentas vencidas en dólares estadounidenses (USD).
+* **Ficha Detallada del Alumno:** Consulta de plan contratado (Mensual, Trimestral, Anual), fecha de caducidad, saldo pendiente, entrenador asignado y total de visitas históricas.
+* **Acciones Rapidas:** Registro de pago directo en recepción, renovación de plan, marcaje manual y gestión de baja de usuario.
 
 ---
 
-## 📁 Estructura del Proyecto
+### 3. Portal Comercial e Interaccion
+
+La landing page comercial proporciona herramientas interactivas orientadas a fidelizar al usuario antes de formalizar su inscripción.
+
+<div align="center">
+  <img src="assets/screenshots/04_landing_calculadora.png" width="48%" alt="Calculadora de Calorías y Macronutrientes" style="border-radius: 6px; margin: 4px;" />
+  <img src="assets/screenshots/05_landing_entrenadores.png" width="48%" alt="Directorio de Entrenadores y Especialidades" style="border-radius: 6px; margin: 4px;" />
+</div>
+
+* **Calculadora de Calorías y Macronutrientes:** Formulario dinámico que procesa sexo, edad, peso, estatura, nivel de actividad y objetivo (perder grasa, mantenimiento o volumen) para proyectar requerimientos calóricos diarios y distribución de macronutrientes.
+* **Directorio de Entrenadores:** Perfiles técnicos del staff con especialidades certificadas (Powerlifting, Hipertrofia, Funcional, Recomposición).
+* **Canales de Atencion:** Botones directos de contacto con WhatsApp e Instagram institucional y reserva de primera sesión gratuita.
+
+---
+
+## Arquitectura y Persistencia de Datos
+
+El sistema implementa una arquitectura orientada a eventos con persistencia centralizada en **Supabase (PostgreSQL)**:
+
+```
+[ Cliente Web / Recepcion ]  <--- WebSocket (Realtime Channel) --->  [ Supabase Engine ]
+[ App Movil / Socios QR    ]  --->  HTTPS / PostgREST REST API  --->  [ PostgreSQL DB ]
+```
+
+* **Suscripcion en Tiempo Real:** La recepción escucha eventos `INSERT` y `UPDATE` sobre la tabla de asistencias, actualizando el tablero al instante cuando un entrenador o socio registra una interacción.
+* **Seguridad en Tablas (RLS):** Se aplican directivas de **Row Level Security** en PostgreSQL para segregar permisos de consulta pública frente a modificaciones restringidas de cuotas y registros de asistencia.
+* **Scripts SQL Incluidos:** La carpeta `supabase/` contiene los scripts de estructura relacional (`create_routines_table.sql`) y políticas de acceso (`fix_delete_policies.sql`).
+
+---
+
+## Estructura del Repositorio
 
 ```text
-Landing Page FITNESS/
 ├── assets/
-│   └── img/                 # Recursos multimedia y fotografías del gimnasio
+│   ├── img/                 # Recursos gráficos y fotografías del gimnasio
+│   └── screenshots/         # Capturas de pantalla e interfaces del sistema
 ├── css/
 │   ├── styles.css           # Estilos de la landing page comercial
-│   └── recepcion.css        # Estilos del panel administrativo de recepción
+│   └── recepcion.css        # Hoja de estilos del panel de recepción
 ├── js/
-│   ├── config.js            # Configuración de credenciales y Supabase Client
-│   ├── main.js              # Lógica de interacción de la landing page
-│   ├── recepcion.js         # Lógica del panel de recepción y suscripción a eventos
-│   └── tracker.js           # Analítica y seguimiento de eventos
+│   ├── config.js            # Inicialización del cliente Supabase
+│   ├── main.js              # Lógica interactiva de la landing comercial
+│   ├── recepcion.js         # Lógica operativa y suscripciones en tiempo real
+│   └── tracker.js           # Métricas de navegación interna
 ├── supabase/
-│   ├── create_routines_table.sql   # Definición de tablas y políticas RLS
-│   └── fix_delete_policies.sql     # Correcciones de permisos de eliminación
-├── ferreira-fitness.apk     # Build compilada de la aplicación móvil vinculada
-├── index.html               # Página web pública del gimnasio
-└── recepcion.html           # Interfaz de gestión en recepción
+│   ├── create_routines_table.sql   # Esquema de tablas y políticas RLS
+│   └── fix_delete_policies.sql     # Corrección de permisos en base de datos
+├── index.html               # Página web comercial
+└── recepcion.html           # Panel de control de acceso
 ```
 
 ---
 
-## 👨‍💻 Autor
+## Instalacion y Ejecucion Local
 
-Desarrollado por **Eduardo José Contreras Borrero**  
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/ejcb11/landing-page-GYM.git
+   cd landing-page-GYM
+   ```
+
+2. **Configurar variables de conexion:**
+   Edite el archivo `js/config.js` e introduzca las credenciales de su proyecto en Supabase:
+   ```javascript
+   const SUPABASE_URL = "https://tu-proyecto.supabase.co";
+   const SUPABASE_ANON_KEY = "tu-anon-key";
+   ```
+
+3. **Ejecutar servidor local:**
+   Puede abrir directamente los archivos con cualquier servidor HTTP local:
+   ```bash
+   # Utilizando Python
+   python -m http.server 8000
+
+   # O con extension Live Server en VS Code
+   ```
+   Acceda a `http://localhost:8000/index.html` para el portal comercial o `http://localhost:8000/recepcion.html` para el panel de recepción.
+
+---
+
+## Autor
+
+**Eduardo José Contreras Borrero**  
+Software Developer & Full Stack Junior  
 * **LinkedIn:** [linkedin.com/in/eduardo-contreras-dev](https://www.linkedin.com/in/eduardo-contreras-dev/)  
 * **GitHub:** [@ejcb11](https://github.com/ejcb11)  
-* **Correo:** [ejcb2006@gmail.com](mailto:ejcb2006@gmail.com)
+* **Contacto:** ejcb2006@gmail.com

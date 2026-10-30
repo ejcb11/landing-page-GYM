@@ -1,4 +1,4 @@
-﻿# Sistema / editores
+# Sistema / editores
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -8,3 +8,10 @@ desktop.ini
 # Dependencias y logs
 node_modules/
 *.log
+
+# Binarios y compilados móviles
+*.apk
+*.aab
+
+# Subcarpetas redundantes / duplicados locales
+landing-page-GYM/
