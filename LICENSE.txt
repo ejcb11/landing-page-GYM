@@ -1,0 +1,57 @@
+==============================================================================
+               FERREIRA FITNESS GYM — PROPIEDAD INTELECTUAL
+                 TÉRMINOS DE LICENCIA Y DERECHOS DE AUTOR
+==============================================================================
+
+Copyright (c) 2026 Eduardo Contreras (@ejcb11).
+Todos los derechos reservados. / All Rights Reserved.
+
+Autor: Eduardo Contreras
+GitHub: https://github.com/ejcb11
+Contacto: ejcb2006@gmail.com
+
+------------------------------------------------------------------------------
+1. NATURALEZA DEL PROYECTO
+------------------------------------------------------------------------------
+El presente software y ecosistema digital "Ferreira Fitness GYM" (incluyendo 
+código fuente frontend, plataforma web comercial, módulo de control de 
+acceso y recepción, suscripciones en tiempo real con Supabase/PostgreSQL, 
+hojas de estilo, scripts y documentación asociada) constituye una obra 
+intelectual original desarrollada con fines exclusivos de EXHIBICIÓN Y 
+DEMOSTRACIÓN TÉCNICA en el portafolio profesional del autor.
+
+------------------------------------------------------------------------------
+2. USOS AUTORIZADOS
+------------------------------------------------------------------------------
+Se concede autorización a reclutadores, empresas, evaluadores de talento y 
+miembros de la comunidad técnica para:
+- Visualizar, revisar e inspeccionar el código fuente a través del repositorio 
+  público de GitHub con fines estrictos de evaluación profesional.
+- Auditar las competencias técnicas en desarrollo Full Stack, diseño de 
+  interfaces web y arquitectura de datos reactiva en tiempo real.
+
+------------------------------------------------------------------------------
+3. RESTRICCIONES Y PROHIBICIONES
+------------------------------------------------------------------------------
+Queda TERMINANTEMENTE PROHIBIDO, sin el consentimiento previo, explícito y por 
+escrito de Eduardo Contreras:
+- La copia total o parcial, clonación, plagio o reutilización del código fuente, 
+  diseño visual, marcas o recursos gráficos para fines comerciales o de lucro.
+- La distribución, venta, reventa, sublicenciamiento o cesión a terceros de este 
+  software o cualquiera de sus componentes.
+- La implementación, despliegue o puesta en producción en gimnasios, centros 
+  deportivos o empresas sin la correspondiente licencia comercial otorgada 
+  por el autor.
+- La eliminación o modificación de los avisos de autoría y derechos de autor.
+
+------------------------------------------------------------------------------
+4. CLÁUSULA DE EXCLUSIÓN DE GARANTÍA
+------------------------------------------------------------------------------
+ESTE SOFTWARE SE PRESENTA "TAL CUAL" ("AS IS"), SIN GARANTÍAS DE NINGÚN TIPO. 
+EN NINGÚN CASO EL AUTOR ASUMIRÁ RESPONSABILIDAD POR RECLAMOS O DAÑOS DERIVADOS 
+DEL USO INDEBIDO O NO AUTORIZADO DE ESTE MATERIAL.
+
+Para consultas profesionales, propuestas laborales o licenciamiento:
+Correo: ejcb2006@gmail.com
+LinkedIn: https://www.linkedin.com/in/eduardo-contreras-dev/
+GitHub: https://github.com/ejcb11

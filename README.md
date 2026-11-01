@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
   <img src="https://img.shields.io/badge/Supabase-Realtime_DB-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
   <img src="https://img.shields.io/badge/PostgreSQL-Database-316192?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <a href="LICENSE.txt"><img src="https://img.shields.io/badge/Copyright-Todos%20los%20Derechos%20Reservados-047857?style=flat-square" alt="Todos los Derechos Reservados" /></a>
 </p>
 
 ---
@@ -142,3 +143,12 @@ Software Developer & Full Stack Junior
 * **LinkedIn:** [linkedin.com/in/eduardo-contreras-dev](https://www.linkedin.com/in/eduardo-contreras-dev/)  
 * **GitHub:** [@ejcb11](https://github.com/ejcb11)  
 * **Contacto:** ejcb2006@gmail.com
+
+---
+
+## 📄 Derechos de Autor & Licencia
+
+Este proyecto y su código fuente son una obra intelectual original de **Eduardo Contreras** creada con fines exclusivos de **exhibición y evaluación técnica en portafolio profesional**.
+
+© 2026 **Eduardo Contreras**. Todos los derechos reservados.  
+Queda terminantemente prohibida la copia, reproducción, distribución, modificación o uso comercial no autorizado de este software sin el consentimiento previo y por escrito del autor. Para términos completos, consulta el archivo [LICENSE.txt](LICENSE.txt).

@@ -1,3 +1,9 @@
+// ==============================================================================
+// Ferreira Fitness GYM — Interacciones del Portal Comercial
+// Copyright (c) 2026 Eduardo Contreras (@ejcb11). Todos los derechos reservados.
+// Obra protegida para exhibición en portafolio. Consulte LICENSE.txt
+// ==============================================================================
+
 /* =========================================================
    Ferreira Fitness – Interacciones de la landing
    ========================================================= */

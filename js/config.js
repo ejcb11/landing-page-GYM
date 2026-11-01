@@ -1,3 +1,9 @@
+// ==============================================================================
+// Ferreira Fitness GYM — Configuración de Parámetros Globales
+// Copyright (c) 2026 Eduardo Contreras (@ejcb11). Todos los derechos reservados.
+// Obra protegida para exhibición en portafolio. Consulte LICENSE.txt
+// ==============================================================================
+
 /* =========================================================
    Configuración general del sitio
    Edita aquí los datos de contacto del gimnasio.
