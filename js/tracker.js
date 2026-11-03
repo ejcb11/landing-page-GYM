@@ -1,11 +1,11 @@
 // ==============================================================================
-// Ferreira Fitness GYM — Rastreador de Progreso Semanal
+// FitGYM — Rastreador de Progreso Semanal
 // Copyright (c) 2026 Eduardo Contreras (@ejcb11). Todos los derechos reservados.
 // Obra protegida para exhibición en portafolio. Consulte LICENSE.txt
 // ==============================================================================
 
 /* =========================================================
-   Ferreira Fitness – Progreso semanal (Ejercicio + Nutrición)
+   FitGYM – Progreso semanal (Ejercicio + Nutrición)
    ---------------------------------------------------------
    Experiencia simple: se elige UN día y se responden 4 preguntas
    rápidas (entreno, comida, agua, sueño). El resumen de la semana
@@ -255,7 +255,7 @@
         avg < 35 ? "Buen comienzo. Cada día cuenta, ¡sigue sumando!" :
         avg < 70 ? "¡Vas muy bien! Mantén el ritmo y cierra fuerte la semana." :
         avg < 100 ? "¡Semana de campeón! Estás construyendo hábitos reales." :
-        "¡100%! Eres la inspiración de la comunidad Ferreira.";
+        "¡100%! Eres la inspiración de la comunidad FitGYM.";
 
       const w = week();
       els.weightStart.value = w.weightStart ?? "";
@@ -366,7 +366,7 @@
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `ferreira-progreso-${toKey(new Date())}.json`;
+      a.download = `fitgym-progreso-${toKey(new Date())}.json`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
@@ -374,7 +374,7 @@
     $("#shareCoach").addEventListener("click", () => {
       const m = metrics(), w = week();
       const lines = [
-        `*Resumen semanal – ${window.FF_CONFIG?.gymName || "Ferreira Fitness"}*`,
+        `*Resumen semanal – ${window.FF_CONFIG?.gymName || "FitGYM"}*`,
         `Semana: ${els.weekLabel.textContent}`,
         `• Entrenamientos: ${m.workouts}/${data.goals.workoutsPerWeek}`,
         `• Días que comí bien: ${m.nutritionDays}/7`,

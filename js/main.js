@@ -1,11 +1,11 @@
 // ==============================================================================
-// Ferreira Fitness GYM — Interacciones del Portal Comercial
+// FitGYM — Interacciones del Portal Comercial
 // Copyright (c) 2026 Eduardo Contreras (@ejcb11). Todos los derechos reservados.
 // Obra protegida para exhibición en portafolio. Consulte LICENSE.txt
 // ==============================================================================
 
 /* =========================================================
-   Ferreira Fitness – Interacciones de la landing
+   FitGYM – Interacciones de la landing
    ========================================================= */
 (function () {
   "use strict";
@@ -315,7 +315,7 @@
 
     const fecha = new Date(d.date + "T12:00:00").toLocaleDateString("es-VE", { weekday: "long", day: "numeric", month: "long" });
     const text =
-      `¡Hola ${CFG.gymName || "Ferreira Fitness"}! 💪 Quiero reservar mi valoración GRATIS.\n\n` +
+      `¡Hola ${CFG.gymName || "FitGYM"}! 💪 Quiero reservar mi valoración GRATIS.\n\n` +
       `👤 Nombre: ${d.name}\n🎂 Edad: ${d.age}\n🎯 Objetivo: ${d.goal}\n` +
       `📅 Fecha: ${fecha}\n⏰ Horario: ${d.time}\n📱 WhatsApp: ${d.phone}`;
     const url = waLink(text);
@@ -329,7 +329,7 @@
 
   /* ---------- Enlaces de WhatsApp, cupos y año ---------- */
   $$(".js-wa").forEach((a) => {
-    a.href = waLink("¡Hola! Quiero más información sobre Ferreira Fitness GYM 💪");
+    a.href = waLink("¡Hola! Quiero más información sobre FitGYM 💪");
     a.target = "_blank"; a.rel = "noopener";
   });
   if (CFG.freeSpotsThisWeek) $("#spots").textContent = CFG.freeSpotsThisWeek;

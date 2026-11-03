@@ -1,4 +1,4 @@
--- Ferreira Fitness GYM - Permitir que Recepción dé de baja socios en la nube.
+-- FitGYM - Permitir que Recepción dé de baja socios en la nube.
 -- Ejecutar UNA vez en Supabase > SQL Editor.
 -- (Hoy el DELETE está bloqueado por Row Level Security y los socios "resucitan" al recargar.)
 

@@ -1,11 +1,11 @@
 // ==============================================================================
-// Ferreira Fitness GYM — Sistema de Recepción y Control de Acceso (Realtime)
+// FitGYM — Sistema de Recepción y Control de Acceso (Realtime)
 // Copyright (c) 2026 Eduardo Contreras (@ejcb11). Todos los derechos reservados.
 // Obra protegida para exhibición en portafolio. Consulte LICENSE.txt
 // ==============================================================================
 
 /**
- * Ferreira Fitness GYM – Sistema de Recepción y Control de Acceso
+ * FitGYM – Sistema de Recepción y Control de Acceso
  * Módulos:
  * 1. Check-In en Vivo & Torno (Doble vía: Manual + QR / Escáner USB)
  * 2. Cartera de Socios, Control de Deudores & Cobranzas por WhatsApp
@@ -23,7 +23,7 @@
     {
       id: 'FF-COLON-00842',
       cedula: '28.412.983',
-      name: 'Eduardo Ferreira',
+      name: 'Eduardo Silva',
       plan: 'Plan VIP Trimestral',
       price: 90.0,
       status: 'active',
@@ -92,10 +92,10 @@
       id: 'FF-COLON-04182',
       cedula: '27.481.902',
       name: 'Andrea Rivas',
-      plan: 'Pase Anual Ferreira Black',
+      plan: 'Pase Anual FitGYM Black',
       price: 320.0,
       status: 'active',
-      trainer: 'Staff Ferreira Team',
+      trainer: 'Staff FitGYM',
       avatar: 'assets/img/trainer_andrea.jpg',
       daysLeft: 194,
       expiration: '26 Abr 2027',
@@ -214,7 +214,7 @@
       plan: 'Plan Mensual Clásico',
       price: 35.0,
       status: 'expired',
-      trainer: 'Staff Ferreira Team',
+      trainer: 'Staff FitGYM',
       avatar: '',
       daysLeft: -12,
       expiration: '02 Oct 2026',
@@ -377,7 +377,7 @@
             plan: d.plan,
             price: parseFloat(d.price) || 35.0,
             status: d.status,
-            trainer: d.trainer_name || 'Carlos Ferreira (Fuerza)',
+            trainer: d.trainer_name || 'Carlos Silva (Fuerza)',
             avatar: d.avatar || old.avatar || '',
             daysLeft: Number.isFinite(parseInt(d.days_left)) ? parseInt(d.days_left) : 30,
             expiration: d.expiration,
@@ -483,7 +483,7 @@
             memberId: 'FF-COLON-04182',
             memberName: 'Andrea Rivas',
             cedula: '27.481.902',
-            plan: 'Pase Anual Ferreira Black',
+            plan: 'Pase Anual FitGYM Black',
             status: 'inside',
             timeIn: formatHour(new Date(now.getTime() - 15 * 60000)),
             timeOut: null,
@@ -873,8 +873,8 @@
     // Mensaje pre-llenado de WhatsApp profesional
     const cleanPhone = (member.phone || '').replace(/[^0-9]/g, '');
     const reminderMsg = encodeURIComponent(
-      `*Recordatorio de Pago – Ferreira Fitness GYM* 🏋️\n\n` +
-      `Hola ${member.name}, te escribimos de recepción de Ferreira Fitness GYM.\n` +
+      `*Recordatorio de Pago – FitGYM* 🏋️\n\n` +
+      `Hola ${member.name}, te escribimos de recepción de FitGYM.\n` +
       `Te recordamos que tu cuota correspondiente a *${member.plan}* tiene un saldo pendiente de *$${dueAmount} USD* (venció el ${member.expiration}).\n\n` +
       `Puedes pasar renovando por recepción (Efectivo, Pago Móvil o Punto de Venta) para mantener tu carnet activo. ¡Te esperamos para seguir entrenando fuerte!`
     );
@@ -933,7 +933,7 @@
         <div style="display:flex; justify-content:space-between; margin-bottom:0.6rem;">
           <div>
             <span style="font-size:0.7rem; font-weight:700; color:var(--muted); text-transform:uppercase;">Entrenador Asignado:</span>
-            <div style="font-size:0.9rem; font-weight:700; color:#fff;">${member.trainer || 'Ferreira Team'}</div>
+            <div style="font-size:0.9rem; font-weight:700; color:#fff;">${member.trainer || 'FitGYM Team'}</div>
           </div>
           <div style="text-align:right;">
             <span style="font-size:0.7rem; font-weight:700; color:var(--muted); text-transform:uppercase;">Asistencias Totales:</span>
@@ -1201,7 +1201,7 @@
         </div>
         <div class="rec-detail-item">
           <span class="rec-detail-label">Entrenador Asignado</span>
-          <span class="rec-detail-value">${member.trainer || 'Ferreira Team'}</span>
+          <span class="rec-detail-value">${member.trainer || 'FitGYM Team'}</span>
         </div>
         <div class="rec-detail-item">
           <span class="rec-detail-label">Método de Check-in</span>
@@ -1540,8 +1540,8 @@
     let lookupName = '';
     let lookupStatus = 'active';
 
-    if (raw.startsWith('FERREIRA_FITNESS_MEMBER:')) {
-      // Formato: FERREIRA_FITNESS_MEMBER:<id>:<cedula>:<nombre>:<estado>
+    if (raw.startsWith('FITGYM_MEMBER:') || raw.startsWith('FERREIRA_FITNESS_MEMBER:')) {
+      // Formato: FITGYM_MEMBER:<id>:<cedula>:<nombre>:<estado>
       const parts = raw.split(':');
       lookupId = (parts[1] || '').trim();
       lookupCedula = (parts[2] || '').trim();
@@ -1584,7 +1584,7 @@
               plan: cloudRow.plan,
               price: parseFloat(cloudRow.price) || 35.0,
               status: cloudRow.status,
-              trainer: cloudRow.trainer_name || 'Carlos Ferreira (Fuerza)',
+              trainer: cloudRow.trainer_name || 'Carlos Silva (Fuerza)',
               avatar: cloudRow.avatar || '',
               daysLeft: Number.isFinite(parseInt(cloudRow.days_left)) ? parseInt(cloudRow.days_left) : 30,
               expiration: cloudRow.expiration,
@@ -1603,7 +1603,7 @@
     }
 
     // 2. Si es un carnet digital emitido por la app móvil y aún no estaba en el gym, lo registramos de inmediato
-    if (!member && raw.startsWith('FERREIRA_FITNESS_MEMBER:')) {
+    if (!member && (raw.startsWith('FITGYM_MEMBER:') || raw.startsWith('FERREIRA_FITNESS_MEMBER:'))) {
       const generatedId = lookupId || `FF-COLON-${Math.floor(10000 + Math.random() * 90000)}`;
       member = {
         id: generatedId,
@@ -1613,7 +1613,7 @@
         plan: 'Plan Miembro Digital',
         price: 35.0,
         status: lookupStatus || 'active',
-        trainer: 'Carlos Ferreira (Fuerza)',
+        trainer: 'Carlos Silva (Fuerza)',
         avatar: '',
         daysLeft: 30,
         expiration: '30 días',
@@ -1838,7 +1838,7 @@
 
     const receiptText = [
       '========================================',
-      '        FERREIRA FITNESS GYM 🏆',
+      '             FITGYM 🏆',
       '          COMPROBANTE DE PAGO',
       '========================================',
       `Fecha: ${dateStr} · ${timeStr}`,
@@ -2077,7 +2077,7 @@
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Ferreira_Fitness_Asistencias_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `FitGYM_Asistencias_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

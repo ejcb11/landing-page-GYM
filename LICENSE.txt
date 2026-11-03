@@ -1,5 +1,5 @@
 ==============================================================================
-               FERREIRA FITNESS GYM — PROPIEDAD INTELECTUAL
+               FITGYM — PROPIEDAD INTELECTUAL
                  TÉRMINOS DE LICENCIA Y DERECHOS DE AUTOR
 ==============================================================================
 
@@ -13,7 +13,7 @@ Contacto: ejcb2006@gmail.com
 ------------------------------------------------------------------------------
 1. NATURALEZA DEL PROYECTO
 ------------------------------------------------------------------------------
-El presente software y ecosistema digital "Ferreira Fitness GYM" (incluyendo 
+El presente software y ecosistema digital "FITGYM" (incluyendo 
 código fuente frontend, plataforma web comercial, módulo de control de 
 acceso y recepción, suscripciones en tiempo real con Supabase/PostgreSQL, 
 hojas de estilo, scripts y documentación asociada) constituye una obra 

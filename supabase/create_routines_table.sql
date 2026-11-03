@@ -1,4 +1,4 @@
--- Ferreira Fitness GYM - Tabla de Rutinas Personalizadas en la Nube
+-- FitGYM - Tabla de Rutinas Personalizadas en la Nube
 -- Ejecutar en Supabase > SQL Editor
 
 create table if not exists public.routines (

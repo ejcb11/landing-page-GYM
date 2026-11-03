@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="assets/screenshots/01_landing_hero.png" width="100%" alt="Ferreira Fitness GYM - Plataforma Web" style="border-radius: 8px;" />
+  <img src="assets/screenshots/01_landing_hero.png" width="100%" alt="FitGYM - Plataforma Web" style="border-radius: 8px;" />
 </div>
 
-<h1 align="center">Ferreira Fitness GYM</h1>
+<h1 align="center">FitGYM</h1>
 <p align="center">
   Plataforma web comercial y sistema de control de acceso en recepción sincronizado en tiempo real.
 </p>
@@ -20,7 +20,7 @@
 
 ## Descripcion General
 
-Sistema web diseñado para **Ferreira Fitness GYM** (San Juan de Colón, Táchira), dividido en dos entornos operativos complementarios:
+Sistema web diseñado para **FitGYM** (San Juan de Colón, Táchira), dividido en dos entornos operativos complementarios:
 
 1. **Portal Comercial de Captación (`index.html`):** Interfaz pública optimizada para conversión de prospectos, consulta de servicios, calculadora nutricional y agendamiento directo.
 2. **Sistema Operativo de Recepción (`recepcion.html`):** Panel administrativo para el mostrador del gimnasio que gestiona control de ingreso de socios, lectura de credenciales QR, monitoreo de aforo en sala y auditoría de cuotas vencidas en tiempo real.
@@ -130,7 +130,7 @@ El sistema implementa una arquitectura orientada a eventos con persistencia cent
 
 ## Alcance del Proyecto
 
-Este repositorio forma parte de mi **portafolio profesional de desarrollo de software**, con el objetivo de exhibir la arquitectura técnica, diseño de interfaces y sincronización de datos en tiempo real construidas para **Ferreira Fitness GYM**.
+Este repositorio forma parte de mi **portafolio profesional de desarrollo de software**, con el objetivo de exhibir la arquitectura técnica, diseño de interfaces y sincronización de datos en tiempo real construidas para **FitGYM**.
 
 El código y material multimedia se presentan como muestra técnica y vitrina de competencias en desarrollo Full Stack.
 
