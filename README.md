@@ -139,7 +139,7 @@ El código y material multimedia se presentan como muestra técnica y vitrina de
 ## Autor
 
 **Eduardo José Contreras Borrero**  
-Software Developer & Full Stack Junior  
+Software Developer & Full Stack Junior.
 * **LinkedIn:** [linkedin.com/in/eduardo-contreras-dev](https://www.linkedin.com/in/eduardo-contreras-dev/)  
 * **GitHub:** [@ejcb11](https://github.com/ejcb11)  
 * **Contacto:** ejcb2006@gmail.com
